@@ -49,6 +49,7 @@ Route::group(['middleware' => ['install']], function () {
 			//User Controller
 			Route::get('users/status/{account_status}','UserController@index');
 			Route::resource('users','UserController');
+			Route::resource('partners','PartnerController');
 
 
 			//Account Controller

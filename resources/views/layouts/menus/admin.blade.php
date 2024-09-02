@@ -139,6 +139,29 @@
         </i>
     </div>
 </a>
+
+<a aria-controls="collapseLayouts" aria-expanded="false" class="nav-link collapsed" data-target="#partner-management" data-toggle="collapse" href="#">
+    <div class="sb-nav-link-icon">
+        <i data-feather="users">
+        </i>
+    </div>
+    {{ _lang('Partners') }}
+    <div class="sb-sidenav-collapse-arrow">
+        <i class="fas fa-angle-down">
+        </i>
+    </div>
+</a>
+<div class="collapse" data-parent="#accordionSidenav" id="partner-management">
+    <nav class="sb-sidenav-menu-nested nav accordion">
+        <a class="nav-link" href="{{ url('admin/partners/create') }}">
+            {{ _lang('Add New') }}
+        </a>
+        <a class="nav-link" href="{{ url('admin/partners') }}">
+            {{ _lang('All partners') }}
+        </a>
+    </nav>
+</div>
+
 <div class="collapse" data-parent="#accordionSidenav" id="administration">
     <nav class="sb-sidenav-menu-nested nav accordion">
         <a class="nav-link" href="{{ url('admin/administration/general_settings') }}">
