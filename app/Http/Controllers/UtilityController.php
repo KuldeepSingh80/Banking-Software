@@ -10,6 +10,8 @@ use App\Setting;
 use Carbon\Carbon;
 use DB;
 use App\Utilities\PHPMySQLBackup;
+use Validator;
+use App\FeeInfo;
 
 class UtilityController extends Controller
 {
@@ -190,5 +192,13 @@ class UtilityController extends Controller
 		return response()->download($file);
 		return back()->with('success', _lang('Backup Created Sucessfully'));		
 	}
-	
+
+	public function fee_management()
+	{
+		$title = _lang('Fee Management');
+
+		$fees = FeeInfo::orderBy('id', 'DESC')->get();
+
+		return view('backend.administration.fee_management.listing', compact('title', 'fees'));
+	}
 }

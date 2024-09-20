@@ -140,6 +140,20 @@
     </div>
 </a>
 
+<div class="collapse" data-parent="#accordionSidenav" id="administration">
+    <nav class="sb-sidenav-menu-nested nav accordion">
+        <a class="nav-link" href="{{ url('admin/administration/general_settings') }}">
+            {{ _lang('General Settings') }}
+        </a>
+        <a class="nav-link" href="{{ url('admin/administration/backup_database') }}">
+            {{ _lang('Database Backup') }}
+        </a>
+        <a class="nav-link" href="{{ url('admin/administration/fee_management') }}">
+            {{ _lang('Fee Management') }}
+        </a>
+    </nav>
+</div>
+
 <a aria-controls="collapseLayouts" aria-expanded="false" class="nav-link collapsed" data-target="#partner-management" data-toggle="collapse" href="#">
     <div class="sb-nav-link-icon">
         <i data-feather="users">
@@ -162,16 +176,6 @@
     </nav>
 </div>
 
-<div class="collapse" data-parent="#accordionSidenav" id="administration">
-    <nav class="sb-sidenav-menu-nested nav accordion">
-        <a class="nav-link" href="{{ url('admin/administration/general_settings') }}">
-            {{ _lang('General Settings') }}
-        </a>
-        <a class="nav-link" href="{{ url('admin/administration/backup_database') }}">
-            {{ _lang('Database Backup') }}
-        </a>
-    </nav>
-</div>
 <a class="nav-link" target="_blank" href="https://securepaymentz.com/price">
     <div class="sb-nav-link-icon">
         <i data-feather="gift">

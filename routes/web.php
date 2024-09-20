@@ -88,7 +88,12 @@ Route::group(['middleware' => ['install']], function () {
 			Route::match(['get', 'post'],'administration/general_settings/{store?}', 'UtilityController@settings')->name('general_settings.update');
 			Route::post('administration/upload_logo', 'UtilityController@upload_logo')->name('general_settings.update_logo');
 			Route::get('administration/backup_database', 'UtilityController@backup_database')->name('utility.backup_database');
+			Route::get('administration/fee_management', 'UtilityController@fee_management')->name('utility.fee_management');
+			Route::post('administration/save_fee', 'FeeController@save_fee')->name('fee.save_fee');
+			Route::post('administration/update_fee/{id}', 'FeeController@update_fee')->name('fee.update_fee');
 
+			//fee Controller
+			Route::resource('fee','FeeController');
 		});
 		
 		//User Only Route
