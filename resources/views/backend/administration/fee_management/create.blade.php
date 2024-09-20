@@ -22,31 +22,31 @@
                         <div class="form-group row">
                             <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="feeName">Fee name</label>
-                                <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" value="test" required>
+                                <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" required>
                             </div>
                             <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="top_up_amount">Top up amount</label>
-                                <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" value="100" required>
+                                <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="levels">How many levels</label>
-                                <input type="text" class="form-control" id="levels" placeholder="Enter Levels" value="3" required>
+                                <input type="text" class="form-control" id="levels" placeholder="Enter Levels" required>
                             </div>
                             <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="partners">How many partners</label>
-                                <input type="text" class="form-control" id="partners" placeholder="Enter Partners" value="4" required>
+                                <input type="text" class="form-control" id="partners" placeholder="Enter Partners" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-lg-6 col-md-6 col-sm-12">
                                 <label for="minimun">Minimum</label>
-                                <input type="text" class="form-control" id="minimun" placeholder="Enter minimun amount" value="20" required>
+                                <input type="text" class="form-control" id="minimun" placeholder="Enter minimun amount" required>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-12">
                                 <label for="maximum">Maximum</label>
-                                <input type="text" class="form-control" id="maximum" placeholder="Enter maximum amount" value="200" required>
+                                <input type="text" class="form-control" id="maximum" placeholder="Enter maximum amount" required>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -340,7 +340,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // Assuming you have a CSRF token in a meta tag
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             body: JSON.stringify(data)
         })
