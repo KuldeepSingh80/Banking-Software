@@ -8,6 +8,7 @@ use App\CardTransaction;
 use App\Transaction;
 use App\User;
 use App\WireTransfer;
+use App\FeeInfo;
 use Auth;
 use DB;
 use Illuminate\Http\Request;
@@ -53,8 +54,10 @@ class ClientController extends Controller {
         @ini_set('max_execution_time', 0);
         @set_time_limit(0);
 
+        $fee = FeeInfo::where('transaction_category', FeeInfo::DEPOSIT)->first();
+
         if (!$request->isMethod('post')) {
-            return view('backend.user_panel.transfer.transfer_between_users');
+            return view('backend.user_panel.transfer.transfer_between_users', compact('fee'));
         } else {
             $validator = Validator::make($request->all(), [
                 'amount'         => 'required|numeric',
@@ -87,11 +90,47 @@ class ClientController extends Controller {
             $account  = Account::find($request->debit_account);
             $account2 = Account::find($request->credit_account);
 
-            //Generate Fee
-            $fee = generate_fee($request->amount, get_option('tbu_fee', 0), get_option('tbu_fee_type', 'percent'));
+            $debitTransationCharge = $request->input('amount');
+            $creditTransationCharges = 0;
+
+            if($fee) {
+                $feeChargesType = $fee->charges_type;
+                $topUpAmount = $fee->top_up_amount;
+
+                $feeCharged = $fee->top_up_amount;
+
+                if($feeChargesType !== 'fixed') {
+                    $feeCharged = ($fee->top_up_amount * $request->amount) / 100;
+                }
+
+                if($fee->payer == 'sender') {
+                    $debitTransationCharge = $request->amount + $feeCharged;
+                    $creditTransationCharges = $request->amount;
+                } elseif($fee->payer == 'receiver') {
+                    $debitTransationCharge = $request->amount;
+                    $creditTransationCharges = $request->amount - $feeCharged;
+                } else {
+                    // Get percentage shares for sender and receiver
+                    $senderPayPercentage = $fee->sender_pay;
+                    $receiverPayPercentage = $fee->receiver_pay;
+
+                    // Calculate sender's and receiver's portions of the fee
+                    $senderFee = ($feeCharged * $senderPayPercentage) / 100;
+                    $receiverFee = ($feeCharged * $receiverPayPercentage) / 100;
+
+                    // Debit and credit transaction charges
+                    $debitTransationCharge = $request->amount + $senderFee; // Sender pays their part of the fee
+                    $creditTransationCharges = $request->amount - $receiverFee; // Receiver pays their part of the fee
+                }
+        
+            } else {
+                //Generate Fee
+                $feeCharged = generate_fee($request->amount, get_option('tbu_fee', 0), get_option('tbu_fee_type', 'percent'));
+                $creditTransationCharges = $request->amount - $feeCharged;
+            }
 
             //Check available balance
-            if (get_account_balance($request->debit_account) < ($request->amount + $fee)) {
+            if (get_account_balance($request->debit_account) < ($request->amount + $feeCharged)) {
                 return back()->with('error', _lang('Insufficient balance !'));
             }
 
@@ -103,7 +142,7 @@ class ClientController extends Controller {
             //Make Debit Transaction
             $debit             = new Transaction();
             $debit->user_id    = Auth::id();
-            $debit->amount     = $request->input('amount');
+            $debit->amount     = $debitTransationCharge;
             $debit->account_id = $request->input('debit_account');
             $debit->dr_cr      = 'dr';
             $debit->type       = 'transfer';
@@ -114,10 +153,10 @@ class ClientController extends Controller {
             $debit->save();
 
             //Make fee Transaction
-            if ($fee > 0) {
+            if ($feeCharged > 0) {
                 $fee_debit             = new Transaction();
                 $fee_debit->user_id    = Auth::id();
-                $fee_debit->amount     = $fee;
+                $fee_debit->amount     = $feeCharged;
                 $fee_debit->account_id = $request->input('debit_account');
                 $fee_debit->dr_cr      = 'dr';
                 $fee_debit->type       = 'fee';
@@ -133,7 +172,7 @@ class ClientController extends Controller {
             $credit             = new Transaction();
             $credit->user_id    = $user_account->id;
             $credit->account_id = $user_account->id;
-            $credit->amount     = $request->amount;
+            $credit->amount     = $creditTransationCharges;
             $credit->dr_cr      = 'cr';
             $credit->type       = 'transfer';
             $credit->status     = $status;

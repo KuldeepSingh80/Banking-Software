@@ -170,7 +170,6 @@ class WithdrawController extends Controller
 		}else{
            return view('backend.withdraw.modal.edit',compact('withdraw','id'));
 		}  
-        
     }
 
     /**

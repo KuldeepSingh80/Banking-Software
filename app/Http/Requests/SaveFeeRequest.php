@@ -44,10 +44,11 @@ class SaveFeeRequest extends FormRequest
             'levels_data.*.percentage_markup_cost' => 'required|numeric',
             'levels_data.*.percentage_markup_base_cost' => 'required|numeric',
             'levels_data.*.partners' => 'required|array',
-            // 'levels_data.*.partners.*.partner_index' => 'required|integer',
-            // 'levels_data.*.partners.*.sharing' => 'required|numeric',
-            // 'levels_data.*.partners.*.fixed_share' => 'required|numeric',
-            // 'levels_data.*.partners.*.percentage_share' => 'required|numeric',
+            'transaction_category' => 'required',
+            'payer' => 'required_if:payer, split',
+            'sender_pay' => 'required_if:payer, split',
+            'receiver_pay' => 'required_if:payer, split',
+            'charges_type' => 'required',
         ];
     }
 

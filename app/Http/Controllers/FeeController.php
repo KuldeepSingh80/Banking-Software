@@ -116,6 +116,11 @@ class FeeController extends Controller
         DB::beginTransaction();
 
         try {
+            if($data['payer'] !== FeeInfo::SPLIT) {
+                $data['sender_pay'] = 0;
+                $data['receiver_pay'] = 0;
+            }
+
             $fee = FeeInfo::create($data);
 
             foreach ($data['levels_data'] as $level) {
@@ -159,6 +164,11 @@ class FeeController extends Controller
 		}
 
 		$data = $request->validated();
+
+        if($data['payer'] !== FeeInfo::SPLIT) {
+            $data['sender_pay'] = 0;
+            $data['receiver_pay'] = 0;
+        }
 
 		DB::beginTransaction();
 

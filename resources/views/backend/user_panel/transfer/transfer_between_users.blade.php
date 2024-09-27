@@ -20,7 +20,7 @@
 						<div class="row">
 							<div class="col-md-12 mb-3">
 								<div class="form-group">
-									<label class="control-label">{{ _lang('Debit Account') }}</label>						
+									<label class="control-label">{{ _lang('Debit Account') }}</label>
 									<select class="form-control auto-select" name="debit_account" data-selected="{{ old('debit_account') }}" required>
 										<option value="">{{ _lang('Select Account') }}</option>
 										@foreach(\App\Account::where('user_id',Auth::id())->where('status',1)->get() as $debit_account )
@@ -44,12 +44,32 @@
 								</div>
 							</div>
 
-							<div class="col-md-12 mb-3">
+							<div class="col-lg-4 col-md-12 col-sm-12 mb-3">
 								<div class="form-group">
 									<label class="control-label">{{ _lang('Amount') }}</label>						
-									<input type="text" class="form-control float-field" name="amount" value="{{ old('amount') }}" required>
+									<input type="text" class="form-control float-field" id="amount" oninput="chargeAmount(this)" data-payer="<?= $fee->payer; ?>" name="amount" data-senderpay= "<?= $fee->sender_pay; ?>" data-receiverpay="<?= $fee->receiver_pay ?>" value="{{ old('amount') }}" required>
 								</div>
 							</div>
+
+							<?php 
+								if($fee && $fee->top_up_amount) {
+							?>
+								<div class="col-lg-3 col-md-12 col-sm-12 mb-3">
+									<div class="form-group">
+										<label class="control-label">{{ _lang('Fee') }}</label>						
+										<input type="text" class="form-control float-field" id="fee" data-value="{{ $fee->top_up_amount }}" name="fee" value="{{ $fee->top_up_amount }}{{ $fee->getChargeSign() }}" disabled required>
+										<input type="hidden" id="charges_type" value="<?= $fee->charges_type; ?>">
+									</div>
+								</div>
+								<div class="col-lg-5 col-md-12 col-sm-12 mb-3">
+									<div class="form-group">
+										<label class="control-label">{{ _lang('Total Payable Amount') }}</label>						
+										<input type="text" class="form-control float-field" id="total_amount" name="fee" disabled required>
+									</div>
+								</div>
+							<?php
+								}
+							?>
 
 							<div class="col-md-12 mb-3">
 								<div class="form-group">
@@ -73,3 +93,35 @@
 </div>
 @endsection
 
+<script>
+	function chargeAmount(row) {
+		var val = $(row).val();
+		var fee = $('#fee').attr('data-value');
+		var charges_type = $('#charges_type').val();
+		var payer = $(row).attr('data-payer');
+		var totalPayableAmount = 0;
+
+		if(charges_type !== 'fixed') {
+			fee = (fee * val) / 100;
+		}
+
+		if(payer == 'sender') {
+			$('#total_amount').val(parseFloat(fee) + parseFloat(val));
+		} else if(payer == 'receiver') {
+			$('#total_amount').val(parseFloat(val));
+		} else {
+			var senderPayPercentage = $(row).attr('data-senderpay');
+			var receiverPayPercentage = $(row).attr('data-receiverpay');
+
+			// Calculate sender and receiver's share of the fee
+			var senderFee = (fee * senderPayPercentage) / 100;
+			var receiverFee = (fee * receiverPayPercentage) / 100;
+
+			// Sender pays their share of the fee plus the value amount
+			var senderPayableAmount = parseFloat(val) + parseFloat(senderFee);
+
+			// var splitVal = parseFloat(val) + (fee / 2);
+			$('#total_amount').val(parseFloat(senderPayableAmount));
+		}
+	}
+</script>

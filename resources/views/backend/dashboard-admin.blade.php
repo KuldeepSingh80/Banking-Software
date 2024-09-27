@@ -48,7 +48,6 @@
 					<p>{{ _lang('Pending Card Transactions') }}</p>
 					<h5 class="mt-2">{{ $pending_card_transaction }}</h5>
 				</div>
-				
 			</div>
 		</div>
 		<div class="col-xl-3 col-md-6">

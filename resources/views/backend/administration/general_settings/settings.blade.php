@@ -92,7 +92,7 @@
 
 											<div class="col-md-6">
 												<div class="form-group">
-													<label class="control-label">{{ _lang('Copyright Text') }}</label>						
+													<label class="control-label">{{ _lang('Copyright Text') }}</label>
 													<input type="text" class="form-control" name="copyright" value="{{ get_option('copyright') }}">
 												</div>
 											</div>
@@ -198,7 +198,6 @@
 								</div>
 							</div>
 						</div>
-
 						
 						<div id="email" class="tab-pane fade">
 							<div class="card"> 
@@ -279,7 +278,6 @@
 								</div>
 							</div>
 						</div>
-							
 
 						<div id="logo" class="tab-pane fade">
 							<div class="card">
@@ -306,7 +304,7 @@
 									</form>	
 								</div>
 							</div>
-						</div>		
+						</div>
 					</div>  
 				</div>
 			</div>
@@ -353,4 +351,3 @@
 })(jQuery);
 </script>
 @endsection
-

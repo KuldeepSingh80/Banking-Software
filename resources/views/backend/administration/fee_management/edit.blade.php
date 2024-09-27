@@ -20,13 +20,20 @@
                     <form onsubmit="generateFee(event)" id="feeForm">
                         @csrf
                         <div class="form-group row">
-                            <div class="col-lg-6 col-md-12 col-sm-12">
+                            <div class="col-lg-4 col-md-12 col-sm-12">
                                 <label for="feeName">Fee name</label>
                                 <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" value="<?= $fee->name; ?>" required>
                             </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12">
+                            <div class="col-lg-4 col-md-12 col-sm-12">
                                 <label for="top_up_amount">Top up amount</label>
                                 <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" value="<?= $fee->top_up_amount; ?>" required>
+                            </div>
+                            <div class="col-lg-4 col-md-12 col-sm-12">
+                                <label for="charge_type">Charge Type</label>
+                                <select name="charge_type" id="charge_type" class="form-control">
+                                    <option value="fixed" <?= $fee->charges_type == 'fixed' ? 'selected': '' ?>>Fixed</option>
+                                    <option value="percentage" <?= $fee->charges_type == 'percentage' ? 'selected': '' ?>>Percentage</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -47,6 +54,35 @@
                             <div class="col-lg-6 col-md-6 col-sm-12">
                                 <label for="maximum">Maximum</label>
                                 <input type="text" class="form-control" id="maximum" placeholder="Enter maximum amount" value="<?= $fee->maximum; ?>" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-6 col-md-6 col-sm-12">
+                                <label for="fee_type">Transaction Category</label>
+                                <select name="fee_type" id="fee_type" class="form-control">
+                                    <option value="">Select Fee Type</option>
+                                    <option value="deposit" <?= $fee->transaction_category == 'deposit' ? 'selected' : '' ?>>Deposit</option>
+                                    <option value="withdraw" <?= $fee->transaction_category == 'withdraw' ? 'selected' : '' ?>>Withdraw</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12">
+                                <label for="payer">Payer</label>
+                                <select name="payer" id="payer" class="form-control">
+                                    <option value="">Select payer</option>
+                                    <option value="sender" <?= $fee->payer == 'sender' ? 'selected' : '' ?>>Sender</option>
+                                    <option value="receiver" <?= $fee->payer == 'receiver' ? 'selected' : '' ?>>Receiver</option>
+                                    <option value="split" <?= $fee->payer == 'split' ? 'selected' : '' ?>>Split</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row <?= $fee->payer == 'split' ? '' : 'd-none' ?>" id="split_payer">
+                            <div class="col-lg-6 col-md-6 col-sm-12">
+                                <label for="sender_pay">Sender Pay</label>
+                                <input type="text" class="form-control" name="sender_pay" id="sender_pay" oninput="divideSplitPay(this, 'sender')" placeholder="Enter sender percentage" value="<?= $fee->sender_pay ?>">
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12">
+                                <label for="receiver_pay">Receiver Pay</label>
+                                <input type="text" class="form-control" name="receiver_pay" id="receiver_pay" oninput="divideSplitPay(this, 'receiver')" placeholder="Enter receiver percentage" value="<?= $fee->receiver_pay ?>">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -298,6 +334,11 @@
         var percentageFee = $('#percentageFee').val().trim();
         var totalFee = $('#totalFee').val().trim();
         var feeId = $('#fee_id').val().trim();
+        var fee_type = $('#fee_type').val().trim();
+        var payer = $('#payer').val().trim();
+        var sender_pay = $('#sender_pay').val().trim();
+        var receiver_pay = $('#receiver_pay').val().trim();
+        var charge_type = $('#charge_type').val().trim();
 
         var data = {
             name: feeName,
@@ -309,6 +350,11 @@
             fixed_fee: fixedFee,
             percentage_fee: percentageFee,
             total_fee: totalFee,
+            transaction_category: fee_type,
+            payer: payer,
+            sender_pay: sender_pay,
+            receiver_pay: receiver_pay,
+            charges_type: charge_type,
             levels_data: []
         };
 
@@ -357,6 +403,38 @@
            }
         })
     });
+
+</script>
+
+<script>
+    $('#payer').on('change', function() {
+        var splitPayer = $('#split_payer');
+
+        if ($(this).val() === 'split') {
+            splitPayer.removeClass('d-none');
+        } else {
+            splitPayer.addClass('d-none');
+        }
+    });
+
+    function divideSplitPay(row, type) {
+        var value = parseFloat($(row).val());
+        
+        if (isNaN(value) || value < 0 || value > 100) {
+            toastr.error('The value should be a number between 0 and 100!');
+            $('#sender_pay').val('');
+            $('#receiver_pay').val('');
+            return;
+        }
+
+        var otherValue = 100 - value;
+
+        if (type === 'sender') {
+            $('#receiver_pay').val(otherValue);
+        } else if (type === 'receiver') {
+            $('#sender_pay').val(otherValue);
+        }
+    }
 
 </script>
 
