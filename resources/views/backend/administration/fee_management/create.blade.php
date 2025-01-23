@@ -106,7 +106,7 @@
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Generate</button>
-                        <button type="button" id="saveForm" class="btn btn-primary btn-save-fee d-none">Save</button>
+                        <button type="button" id="saveForm" class="btn btn-primary btn-save-fee " disabled>Save</button>
                     </form>
 				</div>
 			</div>
@@ -255,6 +255,7 @@
         
         if(levels == levelIndex) {
             $('#fixedFee').val(result);
+            $('.btn-save-fee').removeAttr('disabled');
         }
     }
 
@@ -282,7 +283,7 @@
 
             $('#totalFee').val(totalFee)
 
-            $('.btn-save-fee').removeClass('d-none');
+            $('.btn-save-fee').removeAttr('disabled');
         }
     }
 
