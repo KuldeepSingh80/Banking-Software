@@ -1,0 +1,27 @@
+# Laravel-specific folders and files
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+/.env
+/.env.*.backup
+
+# Ignoring IDE and system-specific files
+.idea
+*.sublime-project
+*.sublime-workspace
+*.vscode
+.DS_Store
+Thumbs.db
+
+# Composer-related files
+composer.phar
+
+# Laravel cache, logs, and compiled files
+/storage/*.key
+/storage/framework/*
+/storage/logs/*
+!/storage/framework/.gitignore
+!/storage/logs/.gitignore
+
+# N
