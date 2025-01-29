@@ -27,7 +27,8 @@ class FeeInfo extends Model
         'transaction_category',
         'payer',
         'sender_pay',
-        'receiver_pay'
+        'receiver_pay',
+        'merchant_id'
     ];
 
     const SPLIT = 'split';

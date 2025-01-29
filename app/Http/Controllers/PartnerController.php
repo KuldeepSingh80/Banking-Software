@@ -143,6 +143,22 @@ class PartnerController extends Controller
         }
     }
 
+    public function getPartners(Request $request){
+        try {
+            $ids = $request->ids;
+            $partners = Partner::whereIn("id", $ids)->get();
+            return response()->json([
+                "success" => true,
+                "data" => $partners
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "success" => false,
+                "data" => $th->getMessage()
+            ]);
+        }
+    }
+
     public function destroy($id)
     {
         $partner = Partner::where('id', $id)->first();

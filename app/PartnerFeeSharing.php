@@ -9,8 +9,13 @@ class PartnerFeeSharing extends Model
     protected $fillable = [
         'sharing_level_id',
         'sharing',
-        'partner',
+        'partner_id',
         'fixed_cost',
         'percentage_cost'
     ];
+
+    public function partners()
+    {
+        return $this->belongsTo(Partner::class, 'partner_id');
+    }
 }

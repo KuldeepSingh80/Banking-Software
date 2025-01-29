@@ -29,7 +29,7 @@ class SaveFeeRequest extends FormRequest
             'name' => 'required|string|max:255',
             'top_up_amount' => 'required|numeric|min:0',
             'levels' => 'required|integer',
-            'partners' => 'required|integer',
+            'partners' => 'required',
             'minimum' => 'required|numeric|min:0',
             'maximum' => 'required|numeric|min:0|gte:minimum',
             'fixed_fee' => 'required|numeric|min:0',
@@ -49,6 +49,7 @@ class SaveFeeRequest extends FormRequest
             'sender_pay' => 'required_if:payer, split',
             'receiver_pay' => 'required_if:payer, split',
             'charges_type' => 'required',
+            'merchant_id' => 'required'
         ];
     }
 

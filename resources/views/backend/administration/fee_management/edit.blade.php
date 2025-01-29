@@ -20,19 +20,32 @@
                     <form onsubmit="generateFee(event)" id="feeForm">
                         @csrf
                         <div class="form-group row">
-                            <div class="col-lg-4 col-md-12 col-sm-12">
+                            <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="feeName">Fee name</label>
                                 <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" value="<?= $fee->name; ?>" required>
                             </div>
-                            <div class="col-lg-4 col-md-12 col-sm-12">
+                            <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="top_up_amount">Top up amount</label>
                                 <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" value="<?= $fee->top_up_amount; ?>" required>
                             </div>
-                            <div class="col-lg-4 col-md-12 col-sm-12">
-                                <label for="charge_type">Charge Type</label>
-                                <select name="charge_type" id="charge_type" class="form-control">
-                                    <option value="fixed" <?= $fee->charges_type == 'fixed' ? 'selected': '' ?>>Fixed</option>
-                                    <option value="percentage" <?= $fee->charges_type == 'percentage' ? 'selected': '' ?>>Percentage</option>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-6 col-md-12 col-sm-12">
+                                <label for="levels">Merchant</label>
+                                <select name="merchant" id="merchant" class="form-control select2">
+                                    <option value="0" disabled>Select merchant</option>
+                                    @foreach($merchants as $m)
+                                    <option value="{{$m->id}}" <?= $m->id == $fee->merchant_id ? 'selected': '' ?>>{{$m->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-sm-12">
+                                <label for="partners">Partners</label>
+                                <select name="partners[]" id="partners" class="form-control select2" disabled multiple>
+                                    <option value="0" disabled>Select partners</option>
+                                    @foreach($partners as $p)
+                                    <option value="{{$p->id}}" <?= in_array($p->id, $sharingPartner->pluck('partner_id')->toArray()) ? 'selected': '' ?>>{{$p->first_name}} {{$p->last_name}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -42,8 +55,11 @@
                                 <input type="text" class="form-control" id="levels" placeholder="Enter Levels" value="<?= $fee->levels; ?>" disabled required>
                             </div>
                             <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="partners">How many partners</label>
-                                <input type="text" class="form-control" id="partners" placeholder="Enter Partners" value="<?= $fee->partners; ?>" disabled required>
+                                <label for="charge_type">Charge Type</label>
+                                <select name="charge_type" id="charge_type" class="form-control">
+                                    <option value="fixed" <?= $fee->charges_type == 'fixed' ? 'selected': '' ?>>Fixed</option>
+                                    <option value="percentage" <?= $fee->charges_type == 'percentage' ? 'selected': '' ?>>Percentage</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -134,6 +150,7 @@
         }
     });
 
+    let sharingParnters = <?= $sharingPartner ?>;
     function loadFeeModules() {
         var tableHtml = '';
         var feeSharings = JSON.parse('<?= $fee->feeSharing; ?>');
@@ -195,12 +212,12 @@
 
                                 tableHtml += `
                                 <tr>
-                                    <td class="p-1">Partner ${partnerIndex}</td>
+                                    <td class="p-1">${element.partners.first_name}</td>
                                     <td class="p-1">
-                                        <input type="text" class="fee-calc-input" placeholder="Add partner share" onchange="partnerValueUpdate(this)" id="partner${partnerIndex}-sharing-${feeSharing.sharing_level}" data-level-index="${feeSharing.sharing_level}" value="${element.sharing}" data-partner-index="${partnerIndex}">
+                                        <input type="text" class="fee-calc-input" placeholder="Add partner share" onchange="partnerValueUpdate(this)" id="partner${element.partners.id}-sharing-${feeSharing.sharing_level}" data-level-index="${feeSharing.sharing_level}" value="${element.sharing}" data-partner-index="${element.partners.id}">
                                     </td>
-                                    <td class="p-1"><span id="partner${partnerIndex}-fixed-share-${feeSharing.sharing_level}">${element.fixed_cost}</span></td>
-                                    <td class="p-1"><span id="partner${partnerIndex}-percentage-share-${feeSharing.sharing_level}">${element.percentage_cost}</span></td>
+                                    <td class="p-1"><span id="partner${element.partners.id}-fixed-share-${feeSharing.sharing_level}">${element.fixed_cost}</span></td>
+                                    <td class="p-1"><span id="partner${element.partners.id}-percentage-share-${feeSharing.sharing_level}">${element.percentage_cost}</span></td>
                                 </tr>`;
                             }
 
@@ -219,16 +236,16 @@
 
             $('#sharing-levels-container').append(tableHtml);
 
-            var partners = $('#partners').val().trim();
+            var partners = $('#partners').val();
     
             var partnerSharingTotal = 0.00;
             var partnerFixedTotal = 0.00;
             var partnerPercentageTotal = 0.00;
     
-            for (let partner = 1; partner <= partners; partner++) {
-                partnerSharingTotal += parseFloat($(`#partner${partner}-sharing-${feeSharing.sharing_level}`).val()) || 0;
-                partnerFixedTotal += parseFloat($(`#partner${partner}-fixed-share-${feeSharing.sharing_level}`).text());
-                partnerPercentageTotal += parseFloat($(`#partner${partner}-percentage-share-${feeSharing.sharing_level}`).text());
+            for (const partner of sharingParnters) {
+                partnerSharingTotal += parseFloat($(`#partner${partner.partners.id}-sharing-${feeSharing.sharing_level}`).val()) || 0;
+                partnerFixedTotal += parseFloat($(`#partner${partner.partners.id}-fixed-share-${feeSharing.sharing_level}`).text());
+                partnerPercentageTotal += parseFloat($(`#partner${partner.partners.id}-percentage-share-${feeSharing.sharing_level}`).text());
             }
 
             $(`#partner-sharing-total-${feeSharing.sharing_level}`).text(partnerSharingTotal.toFixed(3));
@@ -289,7 +306,6 @@
     function partnerValueUpdate(record) {
         var levelIndex = $(record).data('level-index');
         var partnerIndex = $(record).data('partner-index');
-        var partners = $('#partners').val().trim();
 
         var fixedMarkupVal = $(`#fixed-markup-${levelIndex}`).val();
         var percentageMarkupVal = $(`#percentage-markup-${levelIndex}`).val();
@@ -312,10 +328,10 @@
         var partnerFixedTotal = 0.00;
         var partnerPercentageTotal = 0.00;
 
-        for (let partner = 1; partner <= partners; partner++) {
-            partnerSharingTotal += parseFloat($(`#partner${partner}-sharing-${levelIndex}`).val()) || 0;
-            partnerFixedTotal += parseFloat($(`#partner${partner}-fixed-share-${levelIndex}`).text());
-            partnerPercentageTotal += parseFloat($(`#partner${partner}-percentage-share-${levelIndex}`).text());
+        for (const partner of sharingParnters) {
+            partnerSharingTotal += parseFloat($(`#partner${partner.partners.id}-sharing-${levelIndex}`).val()) || 0;
+            partnerFixedTotal += parseFloat($(`#partner${partner.partners.id}-fixed-share-${levelIndex}`).text());
+            partnerPercentageTotal += parseFloat($(`#partner${partner.partners.id}-percentage-share-${levelIndex}`).text());
         }
 
         $(`#partner-sharing-total-${levelIndex}`).text(partnerSharingTotal.toFixed(3));
@@ -327,7 +343,8 @@
         var feeName = $('#feeName').val().trim();
         var topUpAmount = $('#top_up_amount').val().trim();
         var levels = $('#levels').val().trim();
-        var partners = $('#partners').val().trim();
+        var partnerIds = $('#partners').val();
+        var merchant = $('#merchant').val();
         var minimum = $('#minimun').val().trim();
         var maximum = $('#maximum').val().trim();
         var fixedFee = $('#fixedFee').val().trim();
@@ -344,7 +361,7 @@
             name: feeName,
             top_up_amount: topUpAmount,
             levels: levels,
-            partners: partners,
+            partners: partnerIds,
             minimum: minimum,
             maximum: maximum,
             fixed_fee: fixedFee,
@@ -355,6 +372,7 @@
             sender_pay: sender_pay,
             receiver_pay: receiver_pay,
             charges_type: charge_type,
+            merchant_id: merchant,
             levels_data: []
         };
 
@@ -371,12 +389,12 @@
             };
 
             levelData.partners = [];
-            for (var partnerIndex = 1; partnerIndex <= partners; partnerIndex++) {
+            for (const partner of sharingParnters) {
                 levelData.partners.push({
-                    partner_index: partnerIndex,
-                    sharing: parseFloat($(`#partner${partnerIndex}-sharing-${levelIndex}`).val()),
-                    fixed_share: parseFloat($(`#partner${partnerIndex}-fixed-share-${levelIndex}`).text()),
-                    percentage_share: parseFloat($(`#partner${partnerIndex}-percentage-share-${levelIndex}`).text())
+                    partner_id: partner.partners.id,
+                    sharing: parseFloat($(`#partner${partner.partners.id}-sharing-${levelIndex}`).val()),
+                    fixed_share: parseFloat($(`#partner${partner.partners.id}-fixed-share-${levelIndex}`).text()),
+                    percentage_share: parseFloat($(`#partner${partner.partners.id}-percentage-share-${levelIndex}`).text())
                 });
             }
 

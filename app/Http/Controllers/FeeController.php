@@ -8,6 +8,8 @@ use App\FeeInfo;
 use App\FeeSharing;
 use App\PartnerFeeSharing;
 use App\Http\Requests\SaveFeeRequest;
+use App\Merchant;
+use App\Partner;
 
 class FeeController extends Controller
 {
@@ -29,8 +31,9 @@ class FeeController extends Controller
     public function create()
     {
         $title = _lang('Fee Management');
-
-        return view('backend.administration.fee_management.create', compact('title'));
+        $partners = Partner::latest()->get();
+        $merchants = Merchant::latest()->get();
+        return view('backend.administration.fee_management.create', compact('title', 'partners', 'merchants'));
     }
 
     /**
@@ -67,10 +70,13 @@ class FeeController extends Controller
     {
         $title = _lang('Edit Fee');
 
-        $fee = FeeInfo::where('id',$id)->with('feeSharing', 'feeSharing.partnerFeeSharing')->first();
-
+        $fee = FeeInfo::where('id',$id)->with('feeSharing', 'feeSharing.partnerFeeSharing', 'feeSharing.partnerFeeSharing.partners')->first();
+        $feeSharingIds = $fee->feeSharing->pluck('id');
+        $sharingPartner = PartnerFeeSharing::whereIn('sharing_level_id', $feeSharingIds)->with('partners')->groupBy('partner_id')->get();
+        $partners = Partner::latest()->get();
+        $merchants = Merchant::latest()->get();
         if($fee) {
-            return view('backend.administration.fee_management.edit',compact('fee','id', 'title'));
+            return view('backend.administration.fee_management.edit',compact('fee','id', 'title', 'partners', 'merchants', 'sharingPartner'));
         }
 
         return redirect()->back()->with('error', _lang('Fee doesn\'t exist!'));
@@ -120,7 +126,7 @@ class FeeController extends Controller
                 $data['sender_pay'] = 0;
                 $data['receiver_pay'] = 0;
             }
-
+            $data['partners'] = count($request->partners);
             $fee = FeeInfo::create($data);
 
             foreach ($data['levels_data'] as $level) {
@@ -138,7 +144,7 @@ class FeeController extends Controller
                 foreach ($level['partners'] as $partner) {
                     PartnerFeeSharing::create([
                         'sharing_level_id' => $feeSharing->id,
-                        'partner' => $partner['partner_index'],
+                        'partner_id' => $partner['partner_id'],
                         'sharing' => $partner['sharing'] ?: 0,
                         'fixed_cost' => $partner['fixed_share'] ?: 0,
                         'percentage_cost' => $partner['percentage_share'] ?: 0,
@@ -151,20 +157,18 @@ class FeeController extends Controller
             return response()->json(['result' => 'success', 'message' => 'Fee created successfully.']);
         } catch (\Throwable $th) {
             DB::rollback();
-            return response()->json(['result' => 'error', 'message' => 'Failed to save fee information.'], 500);
+            return response()->json(['result' => 'error', 'message' => $th->getMessage()], 500);
         }
 	}
 
 	public function update_fee(SaveFeeRequest $request, $id)
 	{
 		$fee = FeeInfo::where('id', $id)->first();
-
 		if (!$fee) {
 			return response()->json(['result' => 'error', 'message' => 'Fee doesn\'t exist!'], 404);
 		}
 
 		$data = $request->validated();
-
         if($data['payer'] !== FeeInfo::SPLIT) {
             $data['sender_pay'] = 0;
             $data['receiver_pay'] = 0;
@@ -181,8 +185,8 @@ class FeeController extends Controller
 
 			FeeSharing::where('fee_id', $id)->delete();
 
+            $data['partners'] = count($request->partners);
 			$fee->update($data);
-
 			foreach ($data['levels_data'] as $level) {
 				$feeSharing = FeeSharing::create([
 					'fee_id' => $fee->id,
@@ -198,7 +202,7 @@ class FeeController extends Controller
 				foreach ($level['partners'] as $partner) {
 					PartnerFeeSharing::create([
 						'sharing_level_id' => $feeSharing->id,
-						'partner' => $partner['partner_index'],
+                        'partner_id' => $partner['partner_id'],
 						'sharing' => $partner['sharing'] ?: 0,
                         'fixed_cost' => $partner['fixed_share'] ?: 0,
                         'percentage_cost' => $partner['percentage_share'] ?: 0,
@@ -211,8 +215,59 @@ class FeeController extends Controller
 			return response()->json(['result' => 'success', 'message' => 'Fee updated successfully.']);
 		} catch (\Throwable $th) {
 			DB::rollback();
-			dd($th);
+
 			return response()->json(['result' => 'error', 'message' => 'Failed to update fee information.'], 500);
 		}
 	}
+
+    public function duplicate(Request $request)
+    {
+        $id = $request->id;
+        $fee = FeeInfo::with('feeSharing', 'feeSharing.partnerFeeSharing', 'feeSharing.partnerFeeSharing.partners')->find($id);
+        DB::beginTransaction();
+        try {
+            $newFeeData = $fee->toArray();  // Convert the original fee to an array
+            unset($newFeeData['id']);  // Remove the original ID to let the database create a new one
+            if($newFeeData['payer'] !== FeeInfo::SPLIT) {
+                $newFeeData['sender_pay'] = 0;
+                $newFeeData['receiver_pay'] = 0;
+            }
+            // Optionally, modify some fields for the duplicate (e.g., reset dates or IDs)
+            $newFee = FeeInfo::create($newFeeData);  // Create the new FeeInfo record
+
+            // Duplicate the FeeSharing data
+            foreach ($fee->feeSharing as $level) {
+                $newFeeSharing = FeeSharing::create([
+                    'fee_id' => $newFee->id,
+                    'sharing_level' => $level->sharing_level,
+                    'fixed_base_cost' => $level->fixed_base_cost,
+                    'percentage_base_cost' => $level->percentage_base_cost,
+                    'fixed_markup' => $level->fixed_markup,
+                    'percentage_markup' => $level->percentage_markup,
+                    'fixed_markup_base_cost' => $level->fixed_markup_base_cost,
+                    'percentage_markup_base_cost' => $level->percentage_markup_base_cost,
+                ]);
+
+                // Duplicate the PartnerFeeSharing data
+                foreach ($level->partnerFeeSharing as $partner) {
+                    PartnerFeeSharing::create([
+                        'sharing_level_id' => $newFeeSharing->id,
+                        'partner_id' => $partner->partner_id,
+                        'sharing' => $partner->sharing,
+                        'fixed_cost' => $partner->fixed_cost,
+                        'percentage_cost' => $partner->percentage_cost,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return response()->json(['result' => 'success', 'message' => 'Fee created successfully.']);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            //throw $th;
+            return response()->json(['result' => 'error', 'message' => $th->getMessage()], 500);
+        }
+    }
 }
+
+

@@ -154,6 +154,28 @@
     </nav>
 </div>
 
+<a aria-controls="collapseLayouts" aria-expanded="false" class="nav-link collapsed" data-target="#merchants-management" data-toggle="collapse" href="#">
+    <div class="sb-nav-link-icon">
+        <i data-feather="users">
+        </i>
+    </div>
+    {{ _lang('Merchants') }}
+    <div class="sb-sidenav-collapse-arrow">
+        <i class="fas fa-angle-down">
+        </i>
+    </div>
+</a>
+<div class="collapse" data-parent="#accordionSidenav" id="merchants-management">
+    <nav class="sb-sidenav-menu-nested nav accordion">
+        <a class="nav-link" href="{{ url('admin/merchants/create') }}">
+            {{ _lang('Add New') }}
+        </a>
+        <a class="nav-link" href="{{ url('admin/merchants') }}">
+            {{ _lang('All Merchants') }}
+        </a>
+    </nav>
+</div>
+
 <a aria-controls="collapseLayouts" aria-expanded="false" class="nav-link collapsed" data-target="#partner-management" data-toggle="collapse" href="#">
     <div class="sb-nav-link-icon">
         <i data-feather="users">

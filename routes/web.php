@@ -49,7 +49,9 @@ Route::group(['middleware' => ['install']], function () {
 			//User Controller
 			Route::get('users/status/{account_status}','UserController@index');
 			Route::resource('users','UserController');
+			Route::post('partners/selected','PartnerController@getPartners');
 			Route::resource('partners','PartnerController');
+			Route::resource('merchants','MerchantController');
 
 
 			//Account Controller
@@ -91,6 +93,7 @@ Route::group(['middleware' => ['install']], function () {
 			Route::get('administration/fee_management', 'UtilityController@fee_management')->name('utility.fee_management');
 			Route::post('administration/save_fee', 'FeeController@save_fee')->name('fee.save_fee');
 			Route::post('administration/update_fee/{id}', 'FeeController@update_fee')->name('fee.update_fee');
+			Route::post('administration/duplicate', 'FeeController@duplicate')->name('fee.duplicate');
 
 			//fee Controller
 			Route::resource('fee','FeeController');

@@ -20,30 +20,46 @@
                     <form onsubmit="generateFee(event)" id="feeForm">
                         @csrf
                         <div class="form-group row">
-                            <div class="col-lg-4 col-md-12 col-sm-12">
+                            <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="feeName">Fee name</label>
                                 <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" required>
                             </div>
-                            <div class="col-lg-4 col-md-12 col-sm-12">
+                            <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="top_up_amount">Top up amount</label>
                                 <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" required>
                             </div>
-                            <div class="col-lg-4 col-md-12 col-sm-12">
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="charge_type">Charge Type</label>
                                 <select name="charge_type" id="charge_type" class="form-control">
                                     <option value="fixed">Fixed</option>
                                     <option value="percentage">Percentage</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="form-group row">
                             <div class="col-lg-6 col-md-12 col-sm-12">
                                 <label for="levels">How many levels</label>
                                 <input type="text" class="form-control" id="levels" placeholder="Enter Levels" required>
                             </div>
+                        </div>
+                        <div class="form-group row">
                             <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="partners">How many partners</label>
-                                <input type="text" class="form-control" id="partners" placeholder="Enter Partners" required>
+                                <label for="merchant">Merchant</label>
+                                <select name="merchant" id="merchant" class="form-control select2">
+                                    <option value="0" disabled>Select merchant</option>
+                                    @foreach($merchants as $m)
+                                    <option value="{{$m->id}}">{{$m->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-sm-12">
+                                <label for="partners">Partners</label>
+                                <select name="partners[]" id="partners" class="form-control select2" multiple>
+                                    <option value="0" disabled>Select partners</option>
+                                    @foreach($partners as $p)
+                                    <option value="{{$p->id}}">{{$p->first_name}} {{$p->last_name}}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -125,10 +141,11 @@
 @endsection
 @section('js-script')
 <script>
-    function generateFee(e) {
+    let partners = [];
+    async function generateFee(e) {
         e.preventDefault();
         var levels = $('#levels').val().trim();
-        var partners = $('#partners').val().trim();
+        const partnersIds = $('#partners').val();
 
         // Clear previous validation messages
         $('.validation-error').remove();
@@ -144,20 +161,20 @@
             return false;
         }
 
-        if (partners === '') {
+        if (partnersIds === '') {
             $('#partners').after('<span class="validation-error text-danger">Partners field is required</span>');
             return false;
         }
 
-        if(!Number.isInteger(Number(partners))) {
-            $('#partners').after('<span class="validation-error text-danger">Invalid partners input.</span>');
-            return false;
-        }
+        // if(!Number.isInteger(Number(partners))) {
+        //     $('#partners').after('<span class="validation-error text-danger">Invalid partners input.</span>');
+        //     return false;
+        // }
 
         $('#sharing-levels-container').empty();
 
         $('.fee-management-module').removeClass('d-none');
-
+        partners = await getPartnersName(partnersIds);        
         var tableHtml = '';
         for (let levelIndex = 1; levelIndex <= levels; levelIndex++) {
             tableHtml = `
@@ -208,15 +225,15 @@
                             </tr>
                         </thead>
                         <tbody>`;
-                        for (let partnerIndex = 1; partnerIndex <= partners; partnerIndex++) {
+                        for (const partner of partners) {
                             tableHtml += `
                             <tr>
-                                <td class="p-1">Partner ${partnerIndex}</td>
+                                <td class="p-1">${partner.first_name} ${partner.last_name}</td>
                                 <td class="p-1">
-                                    <input type="text" class="fee-calc-input" placeholder="Add partner share" onchange="partnerValueUpdate(this)" id="partner${partnerIndex}-sharing-${levelIndex}" data-level-index="${levelIndex}" data-partner-index="${partnerIndex}">
+                                    <input type="text" class="fee-calc-input" placeholder="Add partner share" onchange="partnerValueUpdate(this)" id="partner${partner.id}-sharing-${levelIndex}" data-level-index="${levelIndex}" data-partner-index="${partner.id}">
                                 </td>
-                                <td class="p-1"><span id="partner${partnerIndex}-fixed-share-${levelIndex}">0.00</span></td>
-                                <td class="p-1"><span id="partner${partnerIndex}-percentage-share-${levelIndex}">0.00</span></td>
+                                <td class="p-1"><span id="partner${partner.id}-fixed-share-${levelIndex}">0.00</span></td>
+                                <td class="p-1"><span id="partner${partner.id}-percentage-share-${levelIndex}">0.00</span></td>
                             </tr>`;
                         }
                         tableHtml += `
@@ -236,6 +253,30 @@
             $('#sharing-levels-container').append(tableHtml);
         }
     }
+
+    function getPartnersName(ids) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: "POST",
+                url: "{{ url('admin/partners/selected') }}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    ids: ids
+                },
+                success: function(response) {
+                    if (response.success === true) {
+                        resolve(response.data);
+                    } else {
+                        resolve([]); // Resolve with an empty array if the response is not successful
+                    }
+                },
+                error: function(error) {
+                    reject(error); // Reject the promise in case of an error
+                }
+            });
+        });
+    }
+
 
     function updateFixedBaseCost(record) {
         var levelIndex = $(record).data('level-index');
@@ -290,7 +331,6 @@
     function partnerValueUpdate(record) {
         var levelIndex = $(record).data('level-index');
         var partnerIndex = $(record).data('partner-index');
-        var partners = $('#partners').val().trim();
 
         var fixedMarkupVal = $(`#fixed-markup-${levelIndex}`).val();
         var percentageMarkupVal = $(`#percentage-markup-${levelIndex}`).val();
@@ -313,10 +353,10 @@
         var partnerFixedTotal = 0.00;
         var partnerPercentageTotal = 0.00;
 
-        for (let partner = 1; partner <= partners; partner++) {
-            partnerSharingTotal += parseFloat($(`#partner${partner}-sharing-${levelIndex}`).val()) || 0;
-            partnerFixedTotal += parseFloat($(`#partner${partner}-fixed-share-${levelIndex}`).text());
-            partnerPercentageTotal += parseFloat($(`#partner${partner}-percentage-share-${levelIndex}`).text());
+        for (const partner of partners) {
+            partnerSharingTotal += parseFloat($(`#partner${partner.id}-sharing-${levelIndex}`).val()) || 0;
+            partnerFixedTotal += parseFloat($(`#partner${partner.id}-fixed-share-${levelIndex}`).text());
+            partnerPercentageTotal += parseFloat($(`#partner${partner.id}-percentage-share-${levelIndex}`).text());
         }
 
         $(`#partner-sharing-total-${levelIndex}`).text(partnerSharingTotal.toFixed(3));
@@ -328,7 +368,8 @@
         var feeName = $('#feeName').val().trim();
         var topUpAmount = $('#top_up_amount').val().trim();
         var levels = $('#levels').val().trim();
-        var partners = $('#partners').val().trim();
+        var partnerIds = $('#partners').val();
+        var merchant = $('#merchant').val();
         var minimum = $('#minimun').val().trim();
         var maximum = $('#maximum').val().trim();
         var fixedFee = $('#fixedFee').val().trim();
@@ -344,7 +385,7 @@
             name: feeName,
             top_up_amount: topUpAmount,
             levels: levels,
-            partners: partners,
+            partners: partnerIds,
             minimum: minimum,
             maximum: maximum,
             fixed_fee: fixedFee,
@@ -355,6 +396,7 @@
             sender_pay: sender_pay,
             receiver_pay: receiver_pay,
             charges_type: charge_type,
+            merchant_id: merchant,
             levels_data: []
         };
 
@@ -371,12 +413,12 @@
             };
 
             levelData.partners = [];
-            for (var partnerIndex = 1; partnerIndex <= partners; partnerIndex++) {
+            for (const partner of partners) {
                 levelData.partners.push({
-                    partner_index: partnerIndex,
-                    sharing: parseFloat($(`#partner${partnerIndex}-sharing-${levelIndex}`).val()),
-                    fixed_share: parseFloat($(`#partner${partnerIndex}-fixed-share-${levelIndex}`).text()),
-                    percentage_share: parseFloat($(`#partner${partnerIndex}-percentage-share-${levelIndex}`).text())
+                    partner_id: partner.id,
+                    sharing: parseFloat($(`#partner${partner.id}-sharing-${levelIndex}`).val()),
+                    fixed_share: parseFloat($(`#partner${partner.id}-fixed-share-${levelIndex}`).text()),
+                    percentage_share: parseFloat($(`#partner${partner.id}-percentage-share-${levelIndex}`).text())
                 });
             }
 

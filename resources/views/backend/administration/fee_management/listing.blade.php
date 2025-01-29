@@ -51,6 +51,7 @@
 											<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                                 <!-- <a href="#" class="dropdown-item dropdown-edit"><i class="mdi mdi-pencil"></i> {{ _lang('Edit') }}</a> -->
                                                 <a href="{{ action('FeeController@edit', $fee->id) }}" class="dropdown-item dropdown-edit"><i class="mdi mdi-pencil"></i> {{ _lang('Edit') }}</a>
+                                                <a href="javascript:void(0)" data-id="{{$fee->id}}" class="dropdown-item dropdown-duplicate"><i class="mdi mdi-pencil"></i> {{ _lang('Duplicate') }}</a>
 												<button data-href="{{ action('FeeController@show', $fee['id']) }}" data-title="{{ _lang('View fee') }}" class="dropdown-item dropdown-view ajax-modal"><i class="mdi mdi-eye"></i> {{ _lang('View') }}</button>
 												<button class="btn-remove dropdown-item" type="submit"><i class="mdi mdi-delete"></i> {{ _lang('Delete') }}</button>
 											</div>
@@ -66,6 +67,33 @@
 		</div>
 	</div>
 </div>
+
+@endsection
+
+@section('js-script')
+
+<script>
+	$(".dropdown-duplicate").on("click", function(){
+		const id = $(this).data('id');
+		const url = `{{ route('fee.duplicate') }}`
+		$.ajax({
+			type:"POST",
+			url:url,
+			data:{
+				id: id,
+				"_token": "{{ csrf_token() }}",
+			},
+			success:function(response){
+                toastr.success('Fee saved successfully!')
+                window.location.href = '{{ route("utility.fee_management") }}';
+			},
+			error:function(error){
+				console.log(error);
+                toastr.error('Something went wrong');				
+			}
+		})
+	})
+</script>
 
 @endsection
 
