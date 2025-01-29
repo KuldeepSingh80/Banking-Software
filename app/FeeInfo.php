@@ -39,6 +39,11 @@ class FeeInfo extends Model
         return $this->hasMany(FeeSharing::class, 'fee_id');
     }
 
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant::class, 'merchant_id');
+    }
+
     public function getChargeSign()
     {
         $chargeType = $this->charges_type;

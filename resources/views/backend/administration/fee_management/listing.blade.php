@@ -16,7 +16,7 @@
 <div class="container-fluid mt-n10">
 	<div class="row">
 		<div class="col-12">
-			<div class="card no-export">
+			<div class="card overflow-auto no-export">
 				<div class="card-body">
 					<h4 class="card-title"><span class="panel-title">{{ $title }}</span>
                         <a class="btn btn-primary btn-sm float-right" href="{{ route('fee.create') }}">{{ _lang('Add New') }}</a>
@@ -26,6 +26,7 @@
 							<tr>
 								<th>{{ _lang('Date') }}</th>
 								<th>{{ _lang('Fee name') }}</th>
+								<th>{{ _lang('Merchant') }}</th>
 								<th>{{ _lang('Fixed fee') }}</th>
 								<th>{{ _lang('Percentage fee') }}</th>
 								<th>{{ _lang('Total fee') }}</th>
@@ -37,6 +38,7 @@
 							<tr id="row_{{ $fee->id }}">
 								<td class='created_at'>{{ $fee->created_at }}</td>
 								<td class='name'>{{ $fee->name }}</td>
+								<td class='name'>{{ @$fee->merchant->name }}</td>
 								<td class='fixed_fee'>{{ $fee->fixed_fee }}</td>
 								<td class='percentage_fee'>{{ $fee->percentage_fee }}</td>
 								<td class='total_fee'>{{ $fee->total_fee }}</td>
