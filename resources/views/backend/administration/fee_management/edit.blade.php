@@ -25,7 +25,7 @@
                                 <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" value="<?= $fee->name; ?>" required>
                             </div>
                             <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="top_up_amount">Top up amount</label>
+                                <label for="top_up_amount">Fee Amount</label>
                                 <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" value="<?= $fee->top_up_amount; ?>" required>
                             </div>
                         </div>
@@ -201,7 +201,7 @@
                             <thead>
                                 <tr>
                                     <th class="p-1"></th>
-                                    <th class="p-1">Sharing</th>
+                                    <th class="p-1">Sharing (in %)</th>
                                     <th class="p-1">Fixed</th>
                                     <th class="p-1">Percentage</th>
                                 </tr>
@@ -310,10 +310,15 @@
         var fixedMarkupVal = $(`#fixed-markup-${levelIndex}`).val();
         var percentageMarkupVal = $(`#percentage-markup-${levelIndex}`).val();
         var sharingVal = parseFloat($(record).val()) || 0;
+        const fixedBaseCost = parseFloat($(`#fixed-base-cost-${levelIndex}`).text())
+        const percentageBaseCost = parseFloat($(`#percentage-base-cost-${levelIndex}`).text())
         var fixedPartnerSharing = 0;
         var percentagePartnerSharing = 0;
 
         if(sharingVal > 0) {
+            // fixedPartnerSharing = fixedMarkupVal > 0? (sharingVal / 100) * fixedMarkupVal: (sharingVal / 100) * fixedBaseCost;
+            // percentagePartnerSharing = percentageMarkupVal > 0? (sharingVal / 100) * percentageMarkupVal: (sharingVal / 100) * percentageBaseCost;
+
             fixedPartnerSharing = (sharingVal / 100) * fixedMarkupVal;
             percentagePartnerSharing = (sharingVal / 100) * percentageMarkupVal;
 

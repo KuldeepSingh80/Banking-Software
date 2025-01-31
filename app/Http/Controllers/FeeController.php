@@ -8,6 +8,7 @@ use App\FeeInfo;
 use App\FeeSharing;
 use App\PartnerFeeSharing;
 use App\Http\Requests\SaveFeeRequest;
+use App\Http\Resources\FeeDetailCollection;
 use App\Merchant;
 use App\Partner;
 
@@ -266,6 +267,44 @@ class FeeController extends Controller
             DB::rollback();
             //throw $th;
             return response()->json(['result' => 'error', 'message' => $th->getMessage()], 500);
+        }
+    }
+
+    public function feeDetail(Request $request)
+    {
+        try {
+            $payload = $request->all();
+            if(isset($payload['success']) && ($payload['success'] !== 'true')){
+                return response()->json(['success' => false, 'data' => "Invalid payload"], 400);
+            }
+            $data = $payload['data'];
+            // Collect all names and merchant keys to minimize queries
+            $names = [];
+            $merchantKeys = [];
+
+            foreach ($data as $d) {
+                $names = array_merge($names, array_keys($d));
+                $merchantKeys[] = $d['merchant_key'];
+            }
+
+            // Remove duplicates for efficiency
+            $names = array_unique($names);
+            $merchantKeys = array_unique($merchantKeys);
+            $fees = FeeInfo::whereIn('name', $names)
+                        ->whereHas('merchant', function($query) use($merchantKeys) {
+                            $query->where("key", $merchantKeys);
+                        })->get();
+            if(!$fees){
+                return response()->json(['success' => false, 'data' => "Fees not found"], 404);
+            }
+            $fees->each(function ($fee) use ($data) {
+                $fee->payload = $data;
+            });
+            $response = new FeeDetailCollection($fees);
+            return response()->json(['success' => true, 'data' => $response], 200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json(['success' => false, 'data' => $th->getMessage()], 500);
         }
     }
 }

@@ -25,6 +25,8 @@ Route::group(['middleware' => ['install']], function () {
 
 	//Pay Now Screen
 	Route::get('payment_request/{id}','PaymentRequestController@view_payment_request');
+
+	Route::post('/fee-detail', 'FeeController@feeDetail');
 	
 	Route::group(['middleware' => ['auth','verified']], function () {
 		
@@ -94,7 +96,6 @@ Route::group(['middleware' => ['install']], function () {
 			Route::post('administration/save_fee', 'FeeController@save_fee')->name('fee.save_fee');
 			Route::post('administration/update_fee/{id}', 'FeeController@update_fee')->name('fee.update_fee');
 			Route::post('administration/duplicate', 'FeeController@duplicate')->name('fee.duplicate');
-
 			//fee Controller
 			Route::resource('fee','FeeController');
 		});
