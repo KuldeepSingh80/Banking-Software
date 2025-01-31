@@ -25,8 +25,6 @@ Route::group(['middleware' => ['install']], function () {
 
 	//Pay Now Screen
 	Route::get('payment_request/{id}','PaymentRequestController@view_payment_request');
-
-	Route::post('/fee-detail', 'FeeController@feeDetail');
 	
 	Route::group(['middleware' => ['auth','verified']], function () {
 		

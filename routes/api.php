@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::post('/fee-detail', 'FeeController@feeDetail');
 
 Route::group(['prefix' => 'auth'], function ($router) {
 
