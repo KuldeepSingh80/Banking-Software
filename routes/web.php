@@ -96,6 +96,12 @@ Route::group(['middleware' => ['install']], function () {
 			Route::post('administration/duplicate', 'FeeController@duplicate')->name('fee.duplicate');
 			//fee Controller
 			Route::resource('fee','FeeController');
+
+			//fees catelog
+			Route::resource('fees-catalog','FeesCatelogController');
+
+			//transaction category
+			Route::resource('transaction-category', 'TransactionCategoryController');
 		});
 		
 		//User Only Route
