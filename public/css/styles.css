@@ -17694,3 +17694,90 @@ a.compose-mail {
   background-color: #cdc3c3;
   border-radius: 15px;
 }
+
+
+.fee-management-module ul {
+  flex-direction: column;
+  border: none;
+  gap: 0;
+}
+
+
+.fee-management-module ul li a {
+  color: #fff;
+  padding: 6px 25px;
+  text-decoration: none;
+  background: #0061f2;
+  display: block;
+}
+
+.fee-management-module ul li.active a,
+.fee-management-module ul li a:hover {
+  background: #fff;
+  color: #000;
+  padding: 6px 25px;
+  border-radius: 4px;
+}
+
+.fee-management-module ul li.active a {
+  background-color: #fff;
+  position: relative;
+  border-top: 1px solid #0061f2 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #0061f2 !important;
+}
+
+.fee-management-module ul li:first-child a{
+  border-top: 0 !important;
+  
+}
+.fee-management-module ul li.active a:before {
+  content: "";
+  width: 2px;
+  background-color: #fff;
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+}
+
+.fees-container {
+  display: flex;
+}
+
+.fee-management-module .tabs-container {
+  flex: 0 0 100px;
+  border: solid 1px #0061f2;
+  /* padding-top: 15px; */
+  /* border-radius: 10px; */
+}
+
+.fee-management-module .sharing-level-container {
+  flex: 0 0 calc(100% - 100px);
+  padding-left: 20px;
+}
+
+
+
+.invalid-input::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+  color:    red;
+}
+.invalid-input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+ color:    red;
+ opacity:  1;
+}
+.invalid-input::-moz-placeholder { /* Mozilla Firefox 19+ */
+ color:    red;
+ opacity:  1;
+}
+.invalid-input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+ color:    red;
+}
+.invalid-input::-ms-input-placeholder { /* Microsoft Edge */
+ color:    red;
+}
+
+.invalid-input::placeholder { /* Most modern browsers support this now. */
+ color:    red;
+}
+

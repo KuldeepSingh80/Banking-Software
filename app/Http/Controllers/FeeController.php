@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use App\FeeInfo;
+use App\FeesCatelog;
 use App\FeeSharing;
 use App\PartnerFeeSharing;
 use App\Http\Requests\SaveFeeRequest;
@@ -21,7 +22,11 @@ class FeeController extends Controller
      */
     public function index()
     {
-        //
+		$title = _lang('Fees Management');
+
+		$fees = FeeInfo::orderBy('id', 'DESC')->get();
+
+		return view('backend.administration.fee_management.listing', compact('title', 'fees'));
     }
 
     /**
@@ -31,10 +36,11 @@ class FeeController extends Controller
      */
     public function create()
     {
-        $title = _lang('Fee Management');
+        $title = _lang('Fees Management');
         $partners = Partner::latest()->get();
         $merchants = Merchant::latest()->get();
-        return view('backend.administration.fee_management.create', compact('title', 'partners', 'merchants'));
+        $feesCatalog = FeesCatelog::latest()->get();
+        return view('backend.administration.fee_management.create', compact('title', 'partners', 'merchants', 'feesCatalog'));
     }
 
     /**
@@ -45,7 +51,50 @@ class FeeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $detail = $request->detail;
+
+		// $detail = $request->validated();
+        DB::beginTransaction();
+        try {
+            foreach($detail as $data){
+                if($data['payer'] !== FeeInfo::SPLIT) {
+                    $data['sender_pay'] = 0;
+                    $data['receiver_pay'] = 0;
+                }
+                $data['partners'] = count($data['partners']);
+                $fee = FeeInfo::create($data);
+    
+                foreach ($data['levels_data'] as $level) {
+                    $feeSharing = FeeSharing::create([
+                        'fee_id' => $fee->id,
+                        'sharing_level' => $level['level_index'],
+                        'fixed_base_cost' => $level['base_fixed'],
+                        'percentage_base_cost' => $level['base_percentage'],
+                        'fixed_markup' => $level['fixed_markup_cost'],
+                        'percentage_markup' => $level['percentage_markup_cost'],
+                        'fixed_markup_base_cost' => $level['fixed_markup_base_cost'],
+                        'percentage_markup_base_cost' => $level['percentage_markup_base_cost'],
+                    ]);
+    
+                    foreach ($level['partners'] as $partner) {
+                        PartnerFeeSharing::create([
+                            'sharing_level_id' => $feeSharing->id,
+                            'partner_id' => $partner['partner_id'],
+                            'sharing' => $partner['sharing'] ?: 0,
+                            'fixed_cost' => $partner['fixed_share'] ?: 0,
+                            'percentage_cost' => $partner['percentage_share'] ?: 0,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json(['result' => 'success', 'message' => 'Fee created successfully.']);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            return response()->json(['result' => 'error', 'message' => $th->getMessage()], 500);
+        }
     }
 
     /**
@@ -114,42 +163,45 @@ class FeeController extends Controller
     }
 
     
-	public function save_fee(SaveFeeRequest $request)
+	public function save_fee(Request $request)
 	{
-		$data = $request->all();
+		$detail = $request->all();
 
-		$data = $request->validated();
+		// $detail = $request->validated();
 
+        dd("ethe",$request->all());
         DB::beginTransaction();
 
         try {
-            if($data['payer'] !== FeeInfo::SPLIT) {
-                $data['sender_pay'] = 0;
-                $data['receiver_pay'] = 0;
-            }
-            $data['partners'] = count($request->partners);
-            $fee = FeeInfo::create($data);
-
-            foreach ($data['levels_data'] as $level) {
-                $feeSharing = FeeSharing::create([
-                    'fee_id' => $fee->id,
-                    'sharing_level' => $level['level_index'],
-                    'fixed_base_cost' => $level['base_fixed'],
-                    'percentage_base_cost' => $level['base_percentage'],
-                    'fixed_markup' => $level['fixed_markup_cost'],
-                    'percentage_markup' => $level['percentage_markup_cost'],
-                    'fixed_markup_base_cost' => $level['fixed_markup_base_cost'],
-                    'percentage_markup_base_cost' => $level['percentage_markup_base_cost'],
-                ]);
-
-                foreach ($level['partners'] as $partner) {
-                    PartnerFeeSharing::create([
-                        'sharing_level_id' => $feeSharing->id,
-                        'partner_id' => $partner['partner_id'],
-                        'sharing' => $partner['sharing'] ?: 0,
-                        'fixed_cost' => $partner['fixed_share'] ?: 0,
-                        'percentage_cost' => $partner['percentage_share'] ?: 0,
+            foreach($detail as $data){
+                if($data['payer'] !== FeeInfo::SPLIT) {
+                    $data['sender_pay'] = 0;
+                    $data['receiver_pay'] = 0;
+                }
+                $data['partners'] = count($request->partners);
+                $fee = FeeInfo::create($data);
+    
+                foreach ($data['levels_data'] as $level) {
+                    $feeSharing = FeeSharing::create([
+                        'fee_id' => $fee->id,
+                        'sharing_level' => $level['level_index'],
+                        'fixed_base_cost' => $level['base_fixed'],
+                        'percentage_base_cost' => $level['base_percentage'],
+                        'fixed_markup' => $level['fixed_markup_cost'],
+                        'percentage_markup' => $level['percentage_markup_cost'],
+                        'fixed_markup_base_cost' => $level['fixed_markup_base_cost'],
+                        'percentage_markup_base_cost' => $level['percentage_markup_base_cost'],
                     ]);
+    
+                    foreach ($level['partners'] as $partner) {
+                        PartnerFeeSharing::create([
+                            'sharing_level_id' => $feeSharing->id,
+                            'partner_id' => $partner['partner_id'],
+                            'sharing' => $partner['sharing'] ?: 0,
+                            'fixed_cost' => $partner['fixed_share'] ?: 0,
+                            'percentage_cost' => $partner['percentage_share'] ?: 0,
+                        ]);
+                    }
                 }
             }
 

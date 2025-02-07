@@ -98,6 +98,7 @@ Route::group(['middleware' => ['install']], function () {
 			Route::resource('fee','FeeController');
 
 			//fees catelog
+			Route::post('fees-catalog/selected','FeesCatelogController@getFeesCatalogs');
 			Route::resource('fees-catalog','FeesCatelogController');
 
 			//transaction category

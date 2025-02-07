@@ -215,4 +215,20 @@ class FeesCatelogController extends Controller
         }
     }
 
+    public function getFeesCatalogs(Request $request){
+        try {
+            $ids = $request->ids;
+            $selectedFeesCatalogs = FeesCatelog::with('transactionCategory')->whereIn("id", $ids)->get();
+            return response()->json([
+                "success" => true,
+                "data" => $selectedFeesCatalogs
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                "success" => false,
+                "data" => $th->getMessage()
+            ]);
+        }
+    }
+
 }
