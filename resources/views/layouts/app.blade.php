@@ -189,6 +189,11 @@
   
 	 <script type="text/javascript">		
 		$(document).ready(function() {	
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+				}
+			});   
 		    @if( ! Request::is('dashboard'))
 				$(".page-title").html($(".panel-title").html()); 
 			@else

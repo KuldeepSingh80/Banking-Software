@@ -14,6 +14,8 @@ class FeeInfo extends Model
      * @var array
      */
     protected $fillable = [
+        'fees_id',
+        'fees_catalog_id',
         'name',
         'top_up_amount',
         'charges_type',
@@ -24,7 +26,7 @@ class FeeInfo extends Model
         'fixed_fee',
         'percentage_fee',
         'total_fee',
-        'transaction_category',
+        'transaction_category_id',
         'payer',
         'sender_pay',
         'receiver_pay',
@@ -42,6 +44,16 @@ class FeeInfo extends Model
     public function merchant()
     {
         return $this->belongsTo(Merchant::class, 'merchant_id');
+    }
+
+    public function feesCatalog()
+    {
+        return $this->belongsTo(FeesCatelog::class, 'fees_catalog_id');
+    }
+
+    public function transactionCategory()
+    {
+        return $this->belongsTo(TransactionCategory::class, 'transaction_id');
     }
 
     public function getChargeSign()
