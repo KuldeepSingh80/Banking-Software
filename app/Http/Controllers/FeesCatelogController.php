@@ -49,6 +49,7 @@ class FeesCatelogController extends Controller
                 'fee_id' => 'required',
                 'feeName' => 'required',
                 'feeDescription' => 'required',
+                'feeDetialDescription' => 'required',
                 'charge_type' => 'required',
                 'fee_type' => 'required',
                 'unit_of_measure' => 'required',
@@ -79,6 +80,7 @@ class FeesCatelogController extends Controller
             $feesCatelog->fees_id = $request->fee_id;
             $feesCatelog->name = $request->feeName;
             $feesCatelog->description = $request->feeDescription;
+            $feesCatelog->detailed_description = $request->feeDetialDescription;
             $feesCatelog->charges_type = $request->charge_type;
             $feesCatelog->transaction_id = $request->fee_type;
             $feesCatelog->unit_of_measure = $request->unit_of_measure;
@@ -146,6 +148,7 @@ class FeesCatelogController extends Controller
                 'fee_id' => 'required|unique:fees_catelogs,fees_id,' . $id,
                 'feeName' => 'required',
                 'feeDescription' => 'required',
+                'feeDetialDescription' => 'required',
                 'charge_type' => 'required',
                 'fee_type' => 'required',
                 'unit_of_measure' => 'required',
@@ -175,6 +178,7 @@ class FeesCatelogController extends Controller
             $feesCatelog->fees_id = $request->fee_id;
             $feesCatelog->name = $request->feeName;
             $feesCatelog->description = $request->feeDescription;
+            $feesCatelog->detailed_description = $request->feeDetialDescription;
             $feesCatelog->charges_type = $request->charge_type;
             $feesCatelog->transaction_id = $request->fee_type;
             $feesCatelog->unit_of_measure = $request->unit_of_measure;

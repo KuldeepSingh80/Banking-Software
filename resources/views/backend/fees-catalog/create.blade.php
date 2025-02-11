@@ -35,7 +35,13 @@
                             <div class="col-lg-6 col-md-12 col-sm-12">
                                 <div class="form-group">
                                     <label for="fee_description">Fee Description <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="fee_description" placeholder="Enter detailed fee description" required>
+                                    <input type="text" class="form-control" id="fee_description" placeholder="Enter internal fee description" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="fee_detail_description">Fee Detailed Description <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="fee_detail_description" placeholder="Enter detailed fee description" required>
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-12 col-sm-12">
@@ -70,6 +76,16 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="unit_of_measure">Unit Of Measure <span class="text-danger">*</span></label>
+                                    <select name="unit_of_measure" id="unit_of_measure" class="form-control">
+                                        <option value="">Select Unit of measure</option>
+                                        <option value="per_transaction">Per Transaction</option>
+                                        <option value="per_month">Per Month</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="col-md-12">
                                 <div class="form-group row d-none" id="split_payer">
                                     <div class="col-lg-6 col-md-6 col-sm-12">
@@ -80,16 +96,6 @@
                                         <label for="receiver_pay">Receiver Pay <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" name="receiver_pay" id="receiver_pay" oninput="divideSplitPay(this, 'receiver')" placeholder="Enter receiver percentage">
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <div class="form-group">
-                                    <label for="unit_of_measure">Unit Of Measure <span class="text-danger">*</span></label>
-                                    <select name="unit_of_measure" id="unit_of_measure" class="form-control">
-                                        <option value="">Select Unit of measure</option>
-                                        <option value="per_transaction">Per Transaction</option>
-                                        <option value="per_month">Per Month</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -109,6 +115,7 @@
         const feeId = $('#fee_id').val().trim();
         const feeName = $('#fee_name').val().trim();
         const feeDescription = $('#fee_description').val().trim();
+        const feeDetialDescription = $('#fee_detail_description').val().trim();
         const charge_type = $('#charge_type').val().trim();
         const fee_type = $('#fee_type').val().trim();
         const payer = $('#payer').val().trim();
@@ -120,6 +127,7 @@
             fee_id: feeId,
             feeName: feeName,
             feeDescription: feeDescription,
+            feeDetialDescription: feeDetialDescription,
             charge_type: charge_type,
             fee_type: fee_type,
             sender_pay: sender_pay,
