@@ -96,6 +96,7 @@ Route::group(['middleware' => ['install']], function () {
 			Route::post('administration/duplicate', 'FeeController@duplicate')->name('fee.duplicate');
 			//fee Controller
 			Route::resource('fee','FeeController');
+			Route::resource('programs','ProgramController');
 
 			//fees catelog
 			Route::post('fees-catalog/selected','FeesCatelogController@getFeesCatalogs');
