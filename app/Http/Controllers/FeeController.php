@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use DB;
 use App\FeeInfo;
 use App\FeesCatelog;
+use App\FeesConfigure;
 use App\FeeSharing;
 use App\PartnerFeeSharing;
 use App\Http\Requests\SaveFeeRequest;
 use App\Http\Resources\FeeDetailCollection;
 use App\Merchant;
 use App\Partner;
+use App\Program;
 
 class FeeController extends Controller
 {
@@ -40,7 +42,8 @@ class FeeController extends Controller
         $partners = Partner::latest()->get();
         $merchants = Merchant::latest()->get();
         $feesCatalog = FeesCatelog::latest()->get();
-        return view('backend.administration.fee_management.create', compact('title', 'partners', 'merchants', 'feesCatalog'));
+        $programs = Program::with(['merchants', 'feesCatalogs'])->latest()->get();
+        return view('backend.administration.fee_management.create', compact('title', 'partners', 'merchants', 'feesCatalog', 'programs'));
     }
 
     /**
@@ -52,22 +55,29 @@ class FeeController extends Controller
     public function store(Request $request)
     {
         $detail = $request->detail;
-
+        $feeConfigValues = $request->feeConfig;
 		// $detail = $request->validated();
         DB::beginTransaction();
         try {
+            $feeConfig = new FeesConfigure();
+            $feeConfig->merchant_id = $feeConfigValues["merchant_id"];
+            $feeConfig->program_id = $feeConfigValues["programSelected"];
+            $feeConfig->save();
             foreach($detail as $data){
                 if($data['payer'] !== FeeInfo::SPLIT) {
                     $data['sender_pay'] = 0;
                     $data['receiver_pay'] = 0;
                 }
                 $data['partners'] = count($data['partners']);
+                
+                $data['fees_config_id'] = $feeConfig->id;
                 $fee = FeeInfo::create($data);
     
-                foreach ($data['levels_data'] as $level) {
+                foreach ($data['levels_data'] as $key => $level) {
                     $feeSharing = FeeSharing::create([
                         'fee_id' => $fee->id,
                         'sharing_level' => $level['level_index'],
+                        'base_cost_partner_id' => $key === 0 && $level['base_fixed'] > 0? $data['base_cost_partner']: null,
                         'fixed_base_cost' => $level['base_fixed'],
                         'percentage_base_cost' => $level['base_percentage'],
                         'fixed_markup' => $level['fixed_markup_cost'],
@@ -120,13 +130,25 @@ class FeeController extends Controller
     {
         $title = _lang('Edit Fee');
 
-        $fee = FeeInfo::where('id',$id)->with('feeSharing', 'feeSharing.partnerFeeSharing', 'feeSharing.partnerFeeSharing.partners')->first();
-        $feeSharingIds = $fee->feeSharing->pluck('id');
-        $sharingPartner = PartnerFeeSharing::whereIn('sharing_level_id', $feeSharingIds)->with('partners')->groupBy('partner_id')->get();
+        $fee = FeesConfigure::findorFail($id);
         $partners = Partner::latest()->get();
         $merchants = Merchant::latest()->get();
+        $feesCatalog = FeesCatelog::latest()->get();
+        $programs = Program::with(['merchants', 'feesCatalogs'])->latest()->get();
+        $partnerIds = $fee->feeInfo->map(function ($feeInfo) {
+            return $feeInfo->feeSharing
+                ->flatMap(fn($feeSharing) => $feeSharing->partnerFeeSharing)
+                ->pluck('partner_id')
+                ->unique()
+                ->values() // Reset array keys
+                ->toArray();
+        })->toArray();
+        
+        $sharingLevels = $fee->feeInfo->map(function($feeInfo){
+            return $feeInfo->feeSharing->toArray();
+        });
         if($fee) {
-            return view('backend.administration.fee_management.edit',compact('fee','id', 'title', 'partners', 'merchants', 'sharingPartner'));
+            return view('backend.administration.fee_management.edit',compact('fee','id', 'title', 'partners', 'merchants', 'feesCatalog', 'programs', 'partnerIds', 'sharingLevels'));
         }
 
         return redirect()->back()->with('error', _lang('Fee doesn\'t exist!'));
@@ -141,8 +163,63 @@ class FeeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $detail = $request->detail;
+        $feeConfigValues = $request->feeConfig;
+        // dd($request->all());
+        DB::beginTransaction();
+        try {
+            // Find the existing FeesConfigure record
+            $feeConfig = FeesConfigure::findOrFail($id);
+            $feeConfig->merchant_id = $feeConfigValues["merchant_id"];
+            $feeConfig->program_id = $feeConfigValues["programSelected"];
+            $feeConfig->save();
+    
+            // Delete old FeeInfo and related records
+            FeeInfo::where('fees_config_id', $feeConfig->id)->delete();
+            
+            foreach ($detail as $data) {
+                if ($data['payer'] !== FeeInfo::SPLIT) {
+                    $data['sender_pay'] = 0;
+                    $data['receiver_pay'] = 0;
+                }
+                $data['partners'] = count($data['partners']);
+                $data['fees_config_id'] = $feeConfig->id;
+                
+                $fee = FeeInfo::create($data);
+                
+                foreach ($data['levels_data'] as $key => $level) {
+                    $feeSharing = FeeSharing::create([
+                        'fee_id' => $fee->id,
+                        'sharing_level' => $level['level_index'],
+                        'base_cost_partner_id' => $key === 0 && $level['base_fixed'] > 0 ? $data['base_cost_partner'] : null,
+                        'fixed_base_cost' => $level['base_fixed'],
+                        'percentage_base_cost' => $level['base_percentage'],
+                        'fixed_markup' => $level['fixed_markup_cost'],
+                        'percentage_markup' => $level['percentage_markup_cost'],
+                        'fixed_markup_base_cost' => $level['fixed_markup_base_cost'],
+                        'percentage_markup_base_cost' => $level['percentage_markup_base_cost'],
+                    ]);
+    
+                    foreach ($level['partners'] as $partner) {
+                        PartnerFeeSharing::create([
+                            'sharing_level_id' => $feeSharing->id,
+                            'partner_id' => $partner['partner_id'],
+                            'sharing' => $partner['sharing'] ?: 0,
+                            'fixed_cost' => $partner['fixed_share'] ?: 0,
+                            'percentage_cost' => $partner['percentage_share'] ?: 0,
+                        ]);
+                    }
+                }
+            }
+    
+            DB::commit();
+            return response()->json(['result' => 'success', 'message' => 'Fee updated successfully.']);
+        } catch (\Throwable $th) {
+            DB::rollback();
+            return response()->json(['result' => 'error', 'message' => $th->getMessage()], 500);
+        }
     }
+    
 
     /**
      * Remove the specified resource from storage.
@@ -152,8 +229,7 @@ class FeeController extends Controller
      */
     public function destroy($id)
     {
-        $fee = FeeInfo::where('id', $id)->first();
-
+        $fee = FeesConfigure::where('id', $id)->first();
         if($fee) {
             $fee->delete();
             return redirect('admin/administration/fee_management')->with('success',_lang('Removed Sucessfully'));

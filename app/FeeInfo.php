@@ -14,6 +14,7 @@ class FeeInfo extends Model
      * @var array
      */
     protected $fillable = [
+        'fees_config_id',
         'fees_id',
         'fees_catalog_id',
         'name',

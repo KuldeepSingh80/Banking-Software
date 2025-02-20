@@ -19,120 +19,48 @@
 				<div class="card-body">		 
                     <form onsubmit="generateFee(event)" id="feeForm">
                         @csrf
-                        <div class="form-group row">
+                        <div class="row">
                             <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="feeName">Fee name</label>
-                                <input type="text" class="form-control" id="feeName" placeholder="Enter fee name" value="<?= $fee->name; ?>" required>
-                            </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="top_up_amount">Fee Amount</label>
-                                <input type="text" class="form-control" id="top_up_amount" placeholder="Enter Top up amount" value="<?= $fee->top_up_amount; ?>" required>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="levels">Merchant</label>
-                                <select name="merchant" id="merchant" class="form-control select2">
-                                    <option value="0" disabled>Select merchant</option>
-                                    @foreach($merchants as $m)
-                                    <option value="{{$m->id}}" <?= $m->id == $fee->merchant_id ? 'selected': '' ?>>{{$m->name}}</option>
-                                    @endforeach
-                                </select>
+                                <div class="form-group">
+                                    <label for="merchant">Merchant</label>
+                                    <input type="text" class="form-control" id="merchant" value="{{@$fee->merchant->name}}" readonly>
+                                </div>
                             </div>
                             <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="partners">Partners</label>
-                                <select name="partners[]" id="partners" class="form-control select2" disabled multiple>
-                                    <option value="0" disabled>Select partners</option>
-                                    @foreach($partners as $p)
-                                    <option value="{{$p->id}}" <?= in_array($p->id, $sharingPartner->pluck('partner_id')->toArray()) ? 'selected': '' ?>>{{$p->first_name}} {{$p->last_name}}</option>
-                                    @endforeach
-                                </select>
+                                <div class="form-group">
+                                        <label for="program">Program</label>
+                                        <input type="text" class="form-control" id="program" value="{{@$fee->program->name}}" readonly>
+                                    </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="fee-catalog-container">
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group row">
-                            <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="levels">How many levels</label>
-                                <input type="text" class="form-control" id="levels" placeholder="Enter Levels" value="<?= $fee->levels; ?>" disabled required>
-                            </div>
-                            <div class="col-lg-6 col-md-12 col-sm-12">
-                                <label for="charge_type">Charge Type</label>
-                                <select name="charge_type" id="charge_type" class="form-control">
-                                    <option value="fixed" <?= $fee->charges_type == 'fixed' ? 'selected': '' ?>>Fixed</option>
-                                    <option value="percentage" <?= $fee->charges_type == 'percentage' ? 'selected': '' ?>>Percentage</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <label for="minimun">Minimum</label>
-                                <input type="text" class="form-control" id="minimun" placeholder="Enter minimun amount" value="<?= $fee->minimum; ?>" required>
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <label for="maximum">Maximum</label>
-                                <input type="text" class="form-control" id="maximum" placeholder="Enter maximum amount" value="<?= $fee->maximum; ?>" required>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <label for="fee_type">Transaction Category</label>
-                                <select name="fee_type" id="fee_type" class="form-control">
-                                    <option value="">Select Fee Type</option>
-                                    <option value="deposit" <?= $fee->transaction_category == 'deposit' ? 'selected' : '' ?>>Deposit</option>
-                                    <option value="withdraw" <?= $fee->transaction_category == 'withdraw' ? 'selected' : '' ?>>Withdraw</option>
-                                </select>
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <label for="payer">Payer</label>
-                                <select name="payer" id="payer" class="form-control">
-                                    <option value="">Select payer</option>
-                                    <option value="sender" <?= $fee->payer == 'sender' ? 'selected' : '' ?>>Sender</option>
-                                    <option value="receiver" <?= $fee->payer == 'receiver' ? 'selected' : '' ?>>Receiver</option>
-                                    <option value="split" <?= $fee->payer == 'split' ? 'selected' : '' ?>>Split</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row <?= $fee->payer == 'split' ? '' : 'd-none' ?>" id="split_payer">
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <label for="sender_pay">Sender Pay</label>
-                                <input type="text" class="form-control" name="sender_pay" id="sender_pay" oninput="divideSplitPay(this, 'sender')" placeholder="Enter sender percentage" value="<?= $fee->sender_pay ?>">
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-12">
-                                <label for="receiver_pay">Receiver Pay</label>
-                                <input type="text" class="form-control" name="receiver_pay" id="receiver_pay" oninput="divideSplitPay(this, 'receiver')" placeholder="Enter receiver percentage" value="<?= $fee->receiver_pay ?>">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-lg-4 col-md-4 col-sm-12">
-                                <label for="fixedFee">
-                                    Fixed Fee &nbsp<i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="The calculated fixed fee will be displayed here."></i>
-                                </label>
-                                <input type="text" class="form-control" id="fixedFee" placeholder="Fixed fee" 
-                                value="<?= $fee->fixed_fee; ?>" disabled required>
-                            </div>
-                            <div class="col-lg-4 col-md-4 col-sm-12">
-                                <label for="percentageFee">
-                                    % Fee &nbsp<i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="The calculated percentage fee will be displayed here."></i>
-                                </label>
-                                <input type="text" class="form-control" id="percentageFee" placeholder="Percentage fee" value="<?= $fee->percentage_fee; ?>" disabled required>
-                            </div>
-                            <div class="col-lg-4 col-md-4 col-sm-12">
-                                <label for="totalFee">
-                                    Total Fee 
-                                </label>
-                                <input type="text" class="form-control" id="totalFee" placeholder="Total fee" value="<?= $fee->total_fee; ?>" disabled required>
-                            </div>
-                        </div>
-                        <!-- <button type="submit" class="btn btn-primary">Generate</button> -->
-                        <button type="button" id="saveForm" class="btn btn-primary btn-save-fee">Update</button>
+                        <button type="button" id="saveForm" class="btn btn-primary btn-save-fee ">
+                            Save
+                            <div class="btn-loader"></div>
+                        </button>
                     </form>
 				</div>
 			</div>
 
-            <div class="card mt-2 fee-management-module">
+            <div class="card mt-2 fee-management-module d-none">
                 <div class="card-body">
-                    <div class="row" id="sharing-levels-container">
-                        
+                    <div class="fees-container">
+                        <div class="tabs-container">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#tab1" data-toggle="tab">Setup Fee</a></li>
+                                <li><a href="#tab2" data-toggle="tab">Total Fee</a></li>
+                                <li><a href="#tab3" data-toggle="tab">New Fees</a></li>
+                            </ul>
+                        </div>
+                        <div class="tab-content fees-catalog-container">
+                        </div>
                     </div>
+                    <!-- <div class="row" id="sharing-levels-container">
+                        
+                    </div> -->
                 </div>
             </div>
 		</div>
@@ -140,60 +68,91 @@
 </div>
 
 @endsection
-
 @section('js-script')
 <script>
-    $(document).ready(function() {
-        const levels = $('#levels').val().trim();
-        if (levels) {
-            loadFeeModules();
-        }
-    });
-
-    let sharingParnters = <?= $sharingPartner ?>;
-    function loadFeeModules() {
-        var tableHtml = '';
-        var feeSharings = JSON.parse('<?= $fee->feeSharing; ?>');
-        
-        for (let index = 0; index < feeSharings.length; index++) {
-            const feeSharing = feeSharings[index];
-
-            tableHtml = `
+    let partners = @json($partners);
+    let selectedProgramId = <?= @$fee->program->id ?>;
+    let addedFeeInfo = <?= @$fee->feeInfo ?>;
+    let selected_partners = @json(array_values($partnerIds));
+    let sharingLevels = @json($sharingLevels);
+    let levelCount = 0;
+    let feeConfigId = <?= $fee->id ?>;
+    
+    $(document).ready(function(){
+        programChange(selectedProgramId)        
+    })
+    
+    let selectedFeesCatalogs = [];
+    const generateFee = async () => {
+        $(".generate-btn").on("click", async function(){
+            const feeId = $(this).data('fee-id');
+            const levels = $(`#${feeId}-levels`).val().trim();
+            const partnersIds = $(`#${feeId}-partners`).val();
+            const minimum = $(`#${feeId}-minimum`).val().trim();
+            const maximum = $(`#${feeId}-maximum`).val().trim();
+            
+            validateField($(`#${feeId}-levels`));
+            validateField($(`#${feeId}-partners`));
+            validateField($(`#${feeId}-minimum`));
+            validateField($(`#${feeId}-maximum`));
+            
+            $(`.${feeId}-sharing-level-container`).empty();
+            const selectedPartners = await getPartnersName(partnersIds);
+            // const selectedPartners = partnersIds;
+               
+            let sharingLevel = '';
+            let indexLevel = 0;            
+            for (let levelIndex = 1; levelIndex <= levels; levelIndex++) {
+                const addedSharing = sharingLevels[levelCount][indexLevel];                             
+                let partnerBaseAmount = ``
+                if(levelIndex === 1){
+                    partnerBaseAmount = `
+                            <tr>
+                                <td class="p-1">Partner </td>
+                                <td class="p-1">
+                                    <select name="partner" class="form-control custom-select-partner" id="${feeId}-base-cost-partner">
+                                    <option value="">Select partner</option>
+                                    ${partners.map(p => `<option value=${p.id} ${addedSharing?.base_cost_partner_id === p.id? "selected": ""}>${p.first_name} ${p.last_name}</option>`)}
+                                    </select>
+                                </td>
+                            </tr>`
+                }
+                sharingLevel += `
                 <div class="col-lg-6 col-md-6 col-sm-12 mt-2">
                     <div class="sharing-levels">
-                    <input type="hidden" value="${feeSharing.fee_id}" id="fee_id">
-                        <h6 class="fee-management-header">Sharing Level ${feeSharing.sharing_level}</h6>
+                        <h6 class="fee-management-header">Sharing Level ${levelIndex}</h6>
                         <table class="table table-bordered">
                             <tr>
-                                <td class="text-center p-1" colspan="2">Base Cost ${feeSharing.sharing_level - 1}</td>
+                                <td class="text-center p-1" colspan="2">Base Cost ${levelIndex - 1}</td>
                             </tr>
                             <tr>
                                 <td class="p-1">Fixed ($)</td>
-                                <td class="p-1"><input type="text" class="fee-calc-input" value="`+feeSharing.fixed_base_cost+`" id="base-fixed-${feeSharing.sharing_level}" placeholder="Enter fixed value"></td>
+                                <td class="p-1"><input type="text" class="fee-calc-input" id="${feeId}-base-fixed-${levelIndex}" value="${addedSharing?.fixed_base_cost}" placeholder="Enter fixed value"></td>
                             </tr>
                             <tr>
                                 <td class="p-1">Percentage (%)</td>
-                                <td class="p-1"><input type="text" class="fee-calc-input" value="`+feeSharing.percentage_base_cost+`" id="base-percentage-${feeSharing.sharing_level}" placeholder="Enter percentage value"></td>
+                                <td class="p-1"><input type="text" class="fee-calc-input" value="${addedSharing?.percentage_base_cost}" id="${feeId}-base-percentage-${levelIndex}" placeholder="Enter percentage value"></td>
                             </tr>
+                            ${partnerBaseAmount}
                         </table>
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th class="p-1"></th>
-                                    <th class="p-1">Markup ${feeSharing.sharing_level}</th>
-                                    <th class="p-1">Base Cost ${feeSharing.sharing_level}</th>
+                                    <th class="p-1">Markup ${levelIndex}</th>
+                                    <th class="p-1">Base Cost ${levelIndex}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="p-1">Fixed ($)</td>
-                                    <td class="p-1"><input type="text" class="fee-calc-input" id="fixed-markup-${feeSharing.sharing_level}" placeholder="Enter fixed value" value="`+feeSharing.fixed_markup+`" onchange="updateFixedBaseCost(this)" data-level-index="${feeSharing.sharing_level}"/></td>
-                                    <td class="p-1"><span id="fixed-base-cost-${feeSharing.sharing_level}">${feeSharing.fixed_markup_base_cost}</span></td>
+                                    <td class="p-1"><input type="text" class="fee-calc-input" value="${addedSharing?.fixed_markup}" id="${feeId}-fixed-markup-${levelIndex}" placeholder="Enter fixed value" oninput="updateFixedBaseCost(this)" data-fees-id="${feeId}" data-level-index="${levelIndex}"/></td>
+                                    <td class="p-1"><span id="${feeId}-fixed-base-cost-${levelIndex}"></span></td>
                                 </tr>
                                 <tr>
                                     <td class="p-1">Percentage (%)</td>
-                                    <td class="p-1"><input type="text" class="fee-calc-input" id="percentage-markup-${feeSharing.sharing_level}" placeholder="Enter percentage value" value="`+feeSharing.percentage_markup+`" onchange="updatePercentageBaseCost(this)" data-level-index="${feeSharing.sharing_level}"/></td>
-                                    <td class="p-1"><span id="percentage-base-cost-${feeSharing.sharing_level}">${feeSharing.percentage_markup_base_cost}</span></td>
+                                    <td class="p-1"><input type="text" value="${addedSharing?.percentage_markup}" class="fee-calc-input" id="${feeId}-percentage-markup-${levelIndex}" placeholder="Enter percentage value" data-fees-id="${feeId}"  oninput="updatePercentageBaseCost(this)" data-level-index="${levelIndex}"/></td>
+                                    <td class="p-1"><span id="${feeId}-percentage-base-cost-${levelIndex}"></span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -206,226 +165,520 @@
                                     <th class="p-1">Percentage</th>
                                 </tr>
                             </thead>
-                            <tbody>`;
-                            for (let partnerIndex = 1; partnerIndex <= feeSharing.partner_fee_sharing.length; partnerIndex++) {
-                                const element = feeSharing.partner_fee_sharing[partnerIndex - 1];
-
-                                tableHtml += `
+                            <tbody>`;    
+                            let totalSharing = 0;
+                            const sharingTotal = addedSharing?.partner_fee_sharing?.map((p) => {
+                                totalSharing += p.sharing
+                                return totalSharing                                
+                            })
+                            console.log(addedSharing, "addedSharing");
+                            
+                            for (const [partnerIndex, partner] of selectedPartners.entries()) {
+                                const partnerSharing = addedSharing?.partner_fee_sharing[partnerIndex];
+                                
+                                sharingLevel += `
                                 <tr>
-                                    <td class="p-1">${element.partners.first_name}</td>
+                                    <td class="p-1">${partner.first_name} ${partner.last_name}</td>
                                     <td class="p-1">
-                                        <input type="text" class="fee-calc-input" placeholder="Add partner share" onchange="partnerValueUpdate(this)" id="partner${element.partners.id}-sharing-${feeSharing.sharing_level}" data-level-index="${feeSharing.sharing_level}" value="${element.sharing}" data-partner-index="${element.partners.id}">
+                                        <input type="text" class="fee-calc-input" value="${partnerSharing?.sharing}"  placeholder="Add partner share" oninput="partnerValueUpdate(this)" data-fees-id="${feeId}" id="${feeId}-partner${partner.id}-sharing-${levelIndex}" data-level-index="${levelIndex}" data-partner-index="${partner.id}">
                                     </td>
-                                    <td class="p-1"><span id="partner${element.partners.id}-fixed-share-${feeSharing.sharing_level}">${element.fixed_cost}</span></td>
-                                    <td class="p-1"><span id="partner${element.partners.id}-percentage-share-${feeSharing.sharing_level}">${element.percentage_cost}</span></td>
+                                    <td class="p-1"><span id="${feeId}-partner${partner.id}-fixed-share-${levelIndex}">0.00</span></td>
+                                    <td class="p-1"><span id="${feeId}-partner${partner.id}-percentage-share-${levelIndex}">0.00</span></td>
                                 </tr>`;
                             }
-
-                            tableHtml += `<tfoot>
+                            sharingLevel += `
+                            </tbody>
+                            <tfoot>
                                 <tr>
                                     <th class="p-1">Total</th>
-                                    <th class="p-1"><span id="partner-sharing-total-${feeSharing.sharing_level}">/th>
-                                    <th class="p-1">$ <span id="partner-fixed-total-${feeSharing.sharing_level}"></span></th>
-                                    <th class="p-1">% <span id="partner-percentage-total-${feeSharing.sharing_level}"></span></th>
+                                    <th class="p-1" <span id="${feeId}-partner-sharing-total-${levelIndex}"></th>
+                                    <th class="p-1">$ <span id="${feeId}-partner-fixed-total-${levelIndex}">0.00</span></th>
+                                    <th class="p-1">% <span id="${feeId}-partner-percentage-total-${levelIndex}">0.00</span></th>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-                </div>
-            `;
-
-            $('#sharing-levels-container').append(tableHtml);
-
-            var partners = $('#partners').val();
-    
-            var partnerSharingTotal = 0.00;
-            var partnerFixedTotal = 0.00;
-            var partnerPercentageTotal = 0.00;
-    
-            for (const partner of sharingParnters) {
-                partnerSharingTotal += parseFloat($(`#partner${partner.partners.id}-sharing-${feeSharing.sharing_level}`).val()) || 0;
-                partnerFixedTotal += parseFloat($(`#partner${partner.partners.id}-fixed-share-${feeSharing.sharing_level}`).text());
-                partnerPercentageTotal += parseFloat($(`#partner${partner.partners.id}-percentage-share-${feeSharing.sharing_level}`).text());
-            }
-
-            $(`#partner-sharing-total-${feeSharing.sharing_level}`).text(partnerSharingTotal.toFixed(3));
-            $(`#partner-fixed-total-${feeSharing.sharing_level}`).text(partnerFixedTotal.toFixed(3));
-            $(`#partner-percentage-total-${feeSharing.sharing_level}`).text(partnerPercentageTotal.toFixed(3));
-        }
+                </div>`;
+                indexLevel++;
+            }            
+            $(".fee-calc-input").trigger('input');
+            $(`.${feeId}-sharing-level-container`).html(sharingLevel);
+            levelCount++;
+        })
     }
 
-    function updateFixedBaseCost(record) {
-        var levelIndex = $(record).data('level-index');
+    const getPartnersName = (ids) => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: "POST",
+                url: "{{ url('admin/partners/selected') }}",
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    ids: ids
+                },
+                success: function(response) {
+                    if (response.success === true) {
+                        resolve(response.data);
+                    } else {
+                        resolve([]); // Resolve with an empty array if the response is not successful
+                    }
+                },
+                error: function(error) {
+                    reject(error); // Reject the promise in case of an error
+                }
+            });
+        });
+    }
 
-        var fixedMarkup = parseFloat($(record).val()) || 0;
-        var baseFixed = parseFloat($(`#base-fixed-${levelIndex}`).val()) || 0;
+    const getFeesCatalog = (ids) => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: "POST",
+                url: "{{ url('admin/fees-catalog/selected') }}",
+                data: {
+                    ids: ids
+                },
+                success: function(response) {
+                    if (response.success === true) {
+                        resolve(response.data);
+                    } else {
+                        resolve([]); // Resolve with an empty array if the response is not successful
+                    }
+                },
+                error: function(error) {
+                    reject(error); // Reject the promise in case of an error
+                }
+            });
+        });
+    }
 
-        var result = fixedMarkup + baseFixed;
-        $(`#fixed-base-cost-${levelIndex}`).text(result.toFixed(2));
+
+    const updateFixedBaseCost = (record) => {
+        const levelIndex = $(record).data('level-index');
+        const feesId = $(record).data('fees-id');
+
+        const fixedMarkup = parseFloat($(record).val()) || 0;
+        const baseFixed = parseFloat($(`#${feesId}-base-fixed-${levelIndex}`).val()) || 0;
+
+        const result = fixedMarkup + baseFixed;
+        $(`#${feesId}-fixed-base-cost-${levelIndex}`).text(result.toFixed(2));
 
         // Check if the next level exists before updating its value
-        if ($(`#base-fixed-${levelIndex + 1}`).length > 0) {
-            $(`#base-fixed-${levelIndex + 1}`).val(result.toFixed(2));
+        if ($(`#${feesId}-base-fixed-${levelIndex + 1}`).length > 0) {
+            $(`#${feesId}-base-fixed-${levelIndex + 1}`).val(result.toFixed(2));
         }
 
-        var levels = $('#levels').val().trim();
+        const levels = $(`#${feesId}-levels`).val().trim();
         
         if(levels == levelIndex) {
-            $('#fixedFee').val(result);
+            $(`#${feesId}-fixedFee`).val(result);
         }
     }
 
-    function updatePercentageBaseCost(record) {
-        var levelIndex = $(record).data('level-index');
+    const updatePercentageBaseCost = (record) => {
+        const levelIndex = $(record).data('level-index');
+        const feesId = $(record).data('fees-id');
 
-        var percentageMarkup = parseFloat($(record).val()) || 0;
-        var basePercentage = parseFloat($(`#base-percentage-${levelIndex}`).val()) || 0;
+        const percentageMarkup = parseFloat($(record).val()) || 0;
+        const basePercentage = parseFloat($(`#${feesId}-base-percentage-${levelIndex}`).val()) || 0;
 
-        var result = percentageMarkup + basePercentage;
-        $(`#percentage-base-cost-${levelIndex}`).text(result.toFixed(2));
+        const result = percentageMarkup + basePercentage;
+        $(`#${feesId}-percentage-base-cost-${levelIndex}`).text(result.toFixed(2));
 
         // Check if the next level exists before updating its value
-        if ($(`#base-percentage-${levelIndex + 1}`).length > 0) {
-            $(`#base-percentage-${levelIndex + 1}`).val(result.toFixed(2));
+        if ($(`#${feesId}-base-percentage-${levelIndex + 1}`).length > 0) {
+            $(`#${feesId}-base-percentage-${levelIndex + 1}`).val(result.toFixed(2));
         }
 
-        var levels = $('#levels').val().trim();
+        const levels = $(`#${feesId}-levels`).val().trim();
         
         if(levels == levelIndex) {
-            $('#percentageFee').val(result);
+            $(`#${feesId}-percentageFee`).val(result);
 
-            var fixedFee = $('#fixedFee').val();
-            var totalFee = (parseFloat(result / 100) + parseFloat(fixedFee)).toFixed(2);
+            const fixedFee = $(`#${feesId}-fixedFee`).val();
+            const totalFee = (parseFloat(result / 100) + parseFloat(fixedFee)).toFixed(2);
 
-            $('#totalFee').val(totalFee)
-
-            $('.btn-save-fee').removeClass('d-none');
+            $(`#${feesId}-totalFee`).val(totalFee)
         }
     }
 
-    function partnerValueUpdate(record) {
-        var levelIndex = $(record).data('level-index');
-        var partnerIndex = $(record).data('partner-index');
+    const partnerValueUpdate = (record) => {        
+        const levelIndex = $(record).data('level-index');
+        const partnerIndex = $(record).data('partner-index');
+        const feesId = $(record).data('fees-id');
 
-        var fixedMarkupVal = $(`#fixed-markup-${levelIndex}`).val();
-        var percentageMarkupVal = $(`#percentage-markup-${levelIndex}`).val();
-        var sharingVal = parseFloat($(record).val()) || 0;
-        const fixedBaseCost = parseFloat($(`#fixed-base-cost-${levelIndex}`).text())
-        const percentageBaseCost = parseFloat($(`#percentage-base-cost-${levelIndex}`).text())
-        var fixedPartnerSharing = 0;
-        var percentagePartnerSharing = 0;
-
-        if(sharingVal > 0) {
-            // fixedPartnerSharing = fixedMarkupVal > 0? (sharingVal / 100) * fixedMarkupVal: (sharingVal / 100) * fixedBaseCost;
-            // percentagePartnerSharing = percentageMarkupVal > 0? (sharingVal / 100) * percentageMarkupVal: (sharingVal / 100) * percentageBaseCost;
-
+        const fixedMarkupVal = $(`#${feesId}-fixed-markup-${levelIndex}`).val();
+        const percentageMarkupVal = $(`#${feesId}-percentage-markup-${levelIndex}`).val();
+        const sharingVal = parseFloat($(record).val()) || 0;
+        const fixedBaseCost = parseFloat($(`#${feesId}-fixed-base-cost-${levelIndex}`).text())
+        const percentageBaseCost = parseFloat($(`#${feesId}-percentage-base-cost-${levelIndex}`).text())
+        let fixedPartnerSharing = 0;
+        let percentagePartnerSharing = 0;
+        
+        if(sharingVal > 0) {            
             fixedPartnerSharing = (sharingVal / 100) * fixedMarkupVal;
             percentagePartnerSharing = (sharingVal / 100) * percentageMarkupVal;
 
-            $(`#partner${partnerIndex}-fixed-share-${levelIndex}`).text(fixedPartnerSharing.toFixed(3));
-            $(`#partner${partnerIndex}-percentage-share-${levelIndex}`).text(percentagePartnerSharing.toFixed(3));
+            $(`#${feesId}-partner${partnerIndex}-fixed-share-${levelIndex}`).text(fixedPartnerSharing.toFixed(3));
+            $(`#${feesId}-partner${partnerIndex}-percentage-share-${levelIndex}`).text(percentagePartnerSharing.toFixed(3));
         } else {
-            $(`#partner${partnerIndex}-fixed-share-${levelIndex}`).text(0.00);
-            $(`#partner${partnerIndex}-percentage-share-${levelIndex}`).text(0.00);
+            $(`#${feesId}-partner${partnerIndex}-fixed-share-${levelIndex}`).text(0.00);
+            $(`#${feesId}-partner${partnerIndex}-percentage-share-${levelIndex}`).text(0.00);
         }
 
-        var partnerSharingTotal = 0.00;
-        var partnerFixedTotal = 0.00;
-        var partnerPercentageTotal = 0.00;
+        let partnerSharingTotal = 0.00;
+        let partnerFixedTotal = 0.00;
+        let partnerPercentageTotal = 0.00;
 
-        for (const partner of sharingParnters) {
-            partnerSharingTotal += parseFloat($(`#partner${partner.partners.id}-sharing-${levelIndex}`).val()) || 0;
-            partnerFixedTotal += parseFloat($(`#partner${partner.partners.id}-fixed-share-${levelIndex}`).text());
-            partnerPercentageTotal += parseFloat($(`#partner${partner.partners.id}-percentage-share-${levelIndex}`).text());
+        for (const partner of partners) {
+            if($(`#${feesId}-partner${partner.id}-sharing-${levelIndex}`).length > 0 && $(`#${feesId}-partner${partner.id}-fixed-share-${levelIndex}`).length > 0
+            && $(`#${feesId}-partner${partner.id}-percentage-share-${levelIndex}`).length > 0){
+                partnerSharingTotal += parseFloat($(`#${feesId}-partner${partner.id}-sharing-${levelIndex}`).val()) || 0;
+                partnerFixedTotal += parseFloat($(`#${feesId}-partner${partner.id}-fixed-share-${levelIndex}`).text());
+                partnerPercentageTotal += parseFloat($(`#${feesId}-partner${partner.id}-percentage-share-${levelIndex}`).text());
+            }
         }
 
-        $(`#partner-sharing-total-${levelIndex}`).text(partnerSharingTotal.toFixed(3));
-        $(`#partner-fixed-total-${levelIndex}`).text(partnerFixedTotal.toFixed(3));
-        $(`#partner-percentage-total-${levelIndex}`).text(partnerPercentageTotal.toFixed(3));
+        $(`#${feesId}-partner-sharing-total-${levelIndex}`).text(partnerSharingTotal.toFixed(3));
+        $(`#${feesId}-partner-fixed-total-${levelIndex}`).text(partnerFixedTotal.toFixed(3));
+        $(`#${feesId}-partner-percentage-total-${levelIndex}`).text(partnerPercentageTotal.toFixed(3));
+    }
+    
+    $('input').on('input', function(){
+        const val = $(this).val();
+        if(val){
+            $(this).removeClass('invalid-input');
+        }else{
+            $(this).addClass('invalid-input');
+        }
+    })
+           
+    let isValid = true;    
+    function validateField(selector) {   
+        if(Array.isArray(selector.val())){     
+            if (selector.val().length === 0) {
+                selector.addClass('invalid-input');
+                isValid = false;
+            } else {
+                selector.removeClass('invalid-input');
+                isValid = true;
+            }
+        }else{
+            if(selector){
+                if (!selector.val()) {
+                    selector.addClass('invalid-input');
+                    isValid = false;
+                } else {
+                    selector.removeClass('invalid-input');
+                    isValid = true;
+                }
+            }else{
+                selector.addClass('invalid-input');
+                isValid = false;
+            }
+        } 
+            
     }
 
-    $('#saveForm').click(function() {
-        var feeName = $('#feeName').val().trim();
-        var topUpAmount = $('#top_up_amount').val().trim();
-        var levels = $('#levels').val().trim();
-        var partnerIds = $('#partners').val();
-        var merchant = $('#merchant').val();
-        var minimum = $('#minimun').val().trim();
-        var maximum = $('#maximum').val().trim();
-        var fixedFee = $('#fixedFee').val().trim();
-        var percentageFee = $('#percentageFee').val().trim();
-        var totalFee = $('#totalFee').val().trim();
-        var feeId = $('#fee_id').val().trim();
-        var fee_type = $('#fee_type').val().trim();
-        var payer = $('#payer').val().trim();
-        var sender_pay = $('#sender_pay').val().trim();
-        var receiver_pay = $('#receiver_pay').val().trim();
-        var charge_type = $('#charge_type').val().trim();
-
-        var data = {
-            name: feeName,
-            top_up_amount: topUpAmount,
-            levels: levels,
-            partners: partnerIds,
-            minimum: minimum,
-            maximum: maximum,
-            fixed_fee: fixedFee,
-            percentage_fee: percentageFee,
-            total_fee: totalFee,
-            transaction_category: fee_type,
-            payer: payer,
-            sender_pay: sender_pay,
-            receiver_pay: receiver_pay,
-            charges_type: charge_type,
+    $('#saveForm').click(async function() {
+        let data = [];
+        const merchant = "{{@$fee->merchant_id}}";
+        const programSelected = "{{@$fee->program_id}}";
+        let feeConfig = {
             merchant_id: merchant,
-            levels_data: []
+            programSelected: programSelected
         };
-
-        // Collect data for each level
-        for (var levelIndex = 1; levelIndex <= levels; levelIndex++) {
-            var levelData = {
-                level_index: levelIndex,
-                base_fixed: parseFloat($(`#base-fixed-${levelIndex}`).val()),
-                base_percentage: parseFloat($(`#base-percentage-${levelIndex}`).val()),
-                fixed_markup_cost: parseFloat($(`#fixed-markup-${levelIndex}`).val()),
-                fixed_markup_base_cost: parseFloat($(`#fixed-base-cost-${levelIndex}`).text()),
-                percentage_markup_cost: parseFloat($(`#percentage-markup-${levelIndex}`).val()),
-                percentage_markup_base_cost: parseFloat($(`#percentage-base-cost-${levelIndex}`).text())
-            };
-
-            levelData.partners = [];
-            for (const partner of sharingParnters) {
-                levelData.partners.push({
-                    partner_id: partner.partners.id,
-                    sharing: parseFloat($(`#partner${partner.partners.id}-sharing-${levelIndex}`).val()),
-                    fixed_share: parseFloat($(`#partner${partner.partners.id}-fixed-share-${levelIndex}`).text()),
-                    percentage_share: parseFloat($(`#partner${partner.partners.id}-percentage-share-${levelIndex}`).text())
-                });
+        for (const fee of selectedFeesCatalogs) {
+            
+            const feeName = $(`#${fee.fees_id}-fee_name`).val().trim();
+            // const topUpAmount = $(`#${fee.fees_id}-top_up_amount`).val().trim();
+            const levels = $(`#${fee.fees_id}-levels`).val().trim();
+            const partnerIds = $(`#${fee.fees_id}-partners`).val();
+            const minimum = $(`#${fee.fees_id}-minimum`).val().trim();
+            const maximum = $(`#${fee.fees_id}-maximum`).val().trim();
+            const fixedFee = $(`#${fee.fees_id}-fixedFee`).val().trim();
+            const percentageFee = $(`#${fee.fees_id}-percentageFee`).val().trim();
+            const totalFee = $(`#${fee.fees_id}-totalFee`).val().trim();
+            const fee_type = $(`#${fee.fees_id}-transaction_category`).val().trim();
+            const payer = $(`#${fee.fees_id}-payer`).val().trim();
+            const sender_pay = $(`#${fee.fees_id}-sender_pay`).val().trim();
+            const receiver_pay = $(`#${fee.fees_id}-receiver_pay`).val().trim();
+            const charge_type = $(`#${fee.fees_id}-charge_type`).val().trim();
+            const base_cost_partner = $(`#${fee.fees_id}-base-cost-partner`).val();
+            // const selectedPartners = await getPartnersName(partnerIds);
+            const selectedPartners = partnerIds;
+            let levels_data = [];
+            validateField($(`#${fee.fees_id}-fee_name`));
+            validateField($(`#${fee.fees_id}-levels`));
+            validateField($(`#${fee.fees_id}-partners`));
+            validateField($('#merchant'));
+            validateField($(`#${fee.fees_id}-minimum`));
+            validateField($(`#${fee.fees_id}-maximum`));
+            validateField($(`#${fee.fees_id}-fixedFee`));
+            validateField($(`#${fee.fees_id}-percentageFee`));
+            validateField($(`#${fee.fees_id}-totalFee`));
+            validateField($(`#${fee.fees_id}-transaction_category`));
+            validateField($(`#${fee.fees_id}-payer`));
+            validateField($(`#${fee.fees_id}-sender_pay`));
+            validateField($(`#${fee.fees_id}-receiver_pay`));
+            validateField($(`#${fee.fees_id}-charge_type`));
+            // Collect data for each level
+            for (var levelIndex = 1; levelIndex <= levels; levelIndex++) {
+                var levelData = {
+                    level_index: levelIndex,
+                    base_fixed: parseFloat($(`#${fee.fees_id}-base-fixed-${levelIndex}`).val()),
+                    base_percentage: parseFloat($(`#${fee.fees_id}-base-percentage-${levelIndex}`).val()),
+                    fixed_markup_cost: parseFloat($(`#${fee.fees_id}-fixed-markup-${levelIndex}`).val()),
+                    fixed_markup_base_cost: parseFloat($(`#${fee.fees_id}-fixed-base-cost-${levelIndex}`).text()),
+                    percentage_markup_cost: parseFloat($(`#${fee.fees_id}-percentage-markup-${levelIndex}`).val()),
+                    percentage_markup_base_cost: parseFloat($(`#${fee.fees_id}-percentage-base-cost-${levelIndex}`).text())
+                };
+                validateField($(`#${fee.fees_id}-base-fixed-${levelIndex}`));
+                validateField($(`#${fee.fees_id}-base-percentage-${levelIndex}`));
+                validateField($(`#${fee.fees_id}-fixed-markup-${levelIndex}`));
+                validateField($(`#${fee.fees_id}-percentage-markup-${levelIndex}`));
+                
+                levelData.partners = [];
+                for (const partner of selectedPartners) {
+                    levelData.partners.push({
+                        partner_id: partner,
+                        sharing: parseFloat($(`#${fee.fees_id}-partner${partner}-sharing-${levelIndex}`).val()),
+                        fixed_share: parseFloat($(`#${fee.fees_id}-partner${partner}-fixed-share-${levelIndex}`).text()),
+                        percentage_share: parseFloat($(`#${fee.fees_id}-partner${partner}-percentage-share-${levelIndex}`).text())
+                    });
+                    validateField($(`#${fee.fees_id}-partner${partner}-sharing-${levelIndex}`));
+                }
+    
+                levels_data.push(levelData);
             }
-
-            data.levels_data.push(levelData);
+            data.push({
+                fees_catalog_id: fee.id,
+                fees_id: fee.fees_id,
+                name: feeName,
+                // top_up_amount: topUpAmount,
+                levels: levels,
+                partners: partnerIds,
+                minimum: minimum,
+                maximum: maximum,
+                fixed_fee: fixedFee,
+                percentage_fee: percentageFee,
+                total_fee: totalFee,
+                transaction_category_id: fee_type,
+                payer: payer,
+                sender_pay: sender_pay,
+                receiver_pay: receiver_pay,
+                charges_type: charge_type,
+                levels_data: levels_data,
+                base_cost_partner: base_cost_partner,
+            });
         }
-
-        var updateFeeRoute = `{{ route('fee.update_fee', ['id' => '']) }}/${feeId}`;
-
-        fetch(updateFeeRoute, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // Assuming you have a CSRF token in a meta tag
-            },
-            body: JSON.stringify(data)
+        isValid = data.map((d) => {
+            if(!d.levels || d.levels_data.length === 0 || d.partners.length === 0){
+                return false;
+            }else{
+                return true
+            }
         })
-        .then(response => response.json())
-        .then(data => {
-           if(data.result == 'error') {
-                toastr.error('Invalid Input!');
-           } else {
+        if (!isValid) {
+            toastr.error('Please fill all required fields!')
+            return;
+        }
+        console.log(data, "=======");
+        $.ajax({
+            type: "PUT",
+            url: `{{ url("admin/fee") }}/${feeConfigId}`,
+            data: {
+                detail: data,
+                feeConfig: feeConfig
+            },
+            beforeSend: function() {
+                $("#saveForm").prop("disabled", true);
+                $("#saveForm .btn-loader").show();
+            },
+            complete: function() {
+                $("#saveForm").prop("disabled", false);
+                $("#saveForm .btn-loader").hide();
+            },
+            success: function (response) {
                 toastr.success('Fee saved successfully!')
                 window.location.href = '{{ route("utility.fee_management") }}';
-           }
-        })
+            },
+            error: function (error) {
+                toastr.error('Something went wrong!')
+            }
+        });
     });
+
+    $(".merchant-select").on("change", function(){
+        const merchantId = $(this).val()
+        $.ajax({
+            type: "GET",
+            url: `{{url('admin/merchants')}}/${merchantId}/programs`,
+            success:function(response){
+                $("#programs-select").empty().append('<option value=""></option>');
+                if(response.success){
+                    const programs = response.data
+
+                    programs.forEach(program => {
+                        $("#programs-select").append($("<option></option>")
+                        .attr("value", program.id)
+                        .text(program.name));                         
+                    });
+                    // $("#programs-select").trigger('change');
+                }else{
+                    toastr.error(response.data)
+                }
+            },
+            error:function(response){
+                toastr.error('Something went wrong!')
+            }
+        })
+    })
+
+    $(".programs-select").on("change", function(){
+        const programId = $(this).val()
+        programChange(programId)
+    })
+
+    function programChange(programId){
+        $('.fee-management-module').removeClass('d-none');
+        $('.fee-management-module .tabs-container ul').empty();  
+        $.ajax({
+            type: "GET",
+            url: `{{url('admin/programs')}}/${programId}/fee-catalog`,
+            success:function(response){
+                if(!response.success){
+                    toastr.error(response.data)
+                }
+                $(".fee-catalog-container").html("")
+                let feeCatalogs = ''
+                let feeCatalogTabs = ``;
+                let feeCatalogContent = ``;
+                selectedFeesCatalogs = response.data;
+                for (const [index, fee] of response.data.entries()) {
+                    feeCatalogTabs += `<li class="${index === 0? 'active': ''}"><a href="#${fee.fees_id}" class="fees_tabs" data-toggle="tab">${fee.name}</a></li>`;
+                    let partnerOption = ``;
+                    for (const partner of partners) {
+                        const selected = selected_partners[index].includes(partner.id)? 'selected': '';
+                        partnerOption += `<option value=${partner.id} ${selected}>${partner.first_name} ${partner.last_name}</option>`
+                    } 
+                    feeCatalogContent += `
+                        <div class="tab-pane ${index === 0? 'active': ''}" id="${fee.fees_id}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-fee_name">Fee Name</label>
+                                        <input type="text" class="form-control" id="${fee.fees_id}-fee_name" value="${fee.name}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-charge_type">Charge Type</label>
+                                        <input type="text" class="form-control" id="${fee.fees_id}-charge_type" value="${fee.charges_type}"
+                                            readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-transaction_category">Transaction Category</label>
+                                        <select name="transaction_category" id="${fee.fees_id}-transaction_category" class="form-control" readonly>
+                                            <option value="${fee?.transaction_category?.id}" selected>${fee?.transaction_category?.name}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-payer">Payer</label>
+                                        <input type="text" class="form-control" id="${fee.fees_id}-payer" value="${fee.payer}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 ${fee.payer !== 'split'? 'd-none':'' }">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-sender_pay">Sender</label>
+                                        <input type="text" class="form-control" id="${fee.fees_id}-sender_pay" value="${fee.sender_pay}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 ${fee.payer !== 'split'? 'd-none':'' }">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-receiver_pay">Receiver</label>
+                                        <input type="text" class="form-control" id="${fee.fees_id}-receiver_pay" value="${fee.receiver_pay}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-12">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-fixedFee">
+                                            Fixed Fee &nbsp;<i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="The calculated fixed fee will be displayed here."></i>
+                                        </label>
+                                        <input type="text" class="form-control" value=${addedFeeInfo[index].fixed_fee} id="${fee.fees_id}-fixedFee" placeholder="Fixed fee"  disabled="" required="">
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-12">
+                                    <label for="${fee.fees_id}-percentageFee">
+                                        % Fee &nbsp;<i class="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="The calculated percentage fee will be displayed here."></i>
+                                    </label>
+                                    <input type="text" class="form-control" id="${fee.fees_id}-percentageFee" placeholder="Percentage fee" value=${addedFeeInfo[index].percentage_fee} disabled="" required="">
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-12">
+                                    <label for="${fee.fees_id}-totalFee">
+                                        Total Fee 
+                                    </label>
+                                    <input type="text" class="form-control" value=${addedFeeInfo[index].total_fee} id="${fee.fees_id}-totalFee" placeholder="Total fee" value="0" disabled="" required="">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-levels">How many levels</label>
+                                        <input type="text" class="form-control" readonly value=${addedFeeInfo[index].levels} id="${fee.fees_id}-levels" placeholder="Enter Levels"  required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-partner">Partners</label>
+                                        <select class="form-control select2" readonly id="${fee.fees_id}-partners" multiple>
+                                            ${partnerOption}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-minimum">Minimum</label>
+                                        <input type="text" class="form-control"  value=${addedFeeInfo[index].minimum} id="${fee.fees_id}-minimum" placeholder="Enter minimum fee"  required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="${fee.fees_id}-maximum">Maximum</label>
+                                        <input type="text" class="form-control" value=${addedFeeInfo[index].maximum} id="${fee.fees_id}-maximum" placeholder="Enter maximum fee"  required>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <button type="button" data-fee-id=${fee.fees_id} class="btn btn-primary generate-btn">Generate</button>
+                                </div>
+                            </div>
+                            <div class="row ${fee.fees_id}-sharing-level-container">
+                            </div>
+                        </div>`
+                }
+                $('.fee-management-module .tabs-container ul').html(feeCatalogTabs);  
+                $('.fees-catalog-container').html(feeCatalogContent);
+                $('.select2').select2()
+                generateFee();
+                $(".generate-btn").trigger("click")
+                // levelCount = 0;
+                $('.fee-management-module ul li a').on("click", function (e) {
+                    e.preventDefault();
+                    $(".fee-management-module ul li").removeClass('active');
+                    const tabId = $(this).attr('href');
+                    $(this).parent().addClass('active');
+                    $('.fees-catalog-container .tab-pane').removeClass('active')
+                    $(tabId).tab('show');
+                    $(".fee-calc-input").trigger('input'); // Trigger input event when tab becomes visible
+                });
+            },
+            error:function(response){
+                toastr.error('Something went wrong!')
+            }
+        })
+    }
 
 </script>
 

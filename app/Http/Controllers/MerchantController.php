@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\FeesConfigure;
 use App\Merchant;
+use App\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -147,5 +149,26 @@ class MerchantController extends Controller
         } else {
             return redirect('admin/merchants')->withErrors(_lang('Something went wrong!'));
         }
+    }
+
+    public function getProgram($id)
+    {
+        try {
+            $addedProgram = FeesConfigure::where("merchant_id", $id)->pluck("program_id")->toArray();
+            $merchant = Merchant::with('programs')->find($id);
+            if(!$merchant){
+                return response()->json(['success' => false, 'data' => "Merchant not found"], 200);
+            }
+            $programs = $merchant->programs->filter(function ($p) use ($addedProgram) {
+                return !in_array($p->id, $addedProgram);
+            });
+            if($programs->isEmpty()){
+                return response()->json(['success' => false, 'data' => "Program not found"], 200);
+            }
+            return response()->json(['success' => true, 'data' => $programs], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'data' => $th->getMessage()], 500);
+        }
+    
     }
 }

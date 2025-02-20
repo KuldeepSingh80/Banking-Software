@@ -12,4 +12,9 @@ class Merchant extends Model
         'name',
 		'key'
     ];
+
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'merchant_program');
+    }
 }

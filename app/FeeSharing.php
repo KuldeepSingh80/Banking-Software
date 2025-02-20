@@ -14,6 +14,7 @@ class FeeSharing extends Model
     protected $fillable = [
         'fee_id',
         'sharing_level',
+        'base_cost_partner_id',
         'fixed_base_cost',
         'percentage_base_cost',
         'fixed_markup',
