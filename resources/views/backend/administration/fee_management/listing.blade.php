@@ -26,20 +26,16 @@
 							<tr>
 								<th>{{ _lang('Date') }}</th>
 								<th>{{ _lang('Merchant') }}</th>
-								<th>{{ _lang('Fees IDs') }}</th>
-								<th>{{ _lang('Sharing Levels') }}</th>
-								<th>{{ _lang('No. of Partners') }}</th>
+								<th>{{ _lang('Program ID') }}</th>
 								<th class="text-center">{{ _lang('Action') }}</th>
 							</tr>
 						</thead>
 						<tbody>
 							@foreach($fees as $fee)
 							<tr id="row_{{ $fee['id'] }}">
-								<td class='created_at'>{{ $fee['created_at'] }}</td>
-								<td class='name'>{{ @$fee['merchant_name'] }}</td>
-								<td class='name'>{{ implode(', ', $fee['fees_id']) }}</td>
-								<td class='fixed_fee'>{{ $fee['sharing_levels'] }}</td>
-								<td class='percentage_fee'>{{ $fee['partners'] }}</td>
+								<td class='created_at'>{{ $fee->created_at }}</td>
+								<td class='name'>{{ @$fee->merchant->name }}</td>
+								<td class='name'>{{ @$fee->program->name }}</td>
 								<td class="text-center">
 									<div class="dropdown">
 										<button class="btn btn-primary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -50,7 +46,7 @@
 											<input name="_method" type="hidden" value="DELETE">
 											<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                                 <!-- <a href="#" class="dropdown-item dropdown-edit"><i class="mdi mdi-pencil"></i> {{ _lang('Edit') }}</a> -->
-                                                <a href="#" class="dropdown-item dropdown-edit"><i class="mdi mdi-pencil"></i> {{ _lang('Edit') }}</a>
+                                                <a href="{{ action('FeeController@edit', $fee['id']) }}" class="dropdown-item dropdown-edit"><i class="mdi mdi-pencil"></i> {{ _lang('Edit') }}</a>
                                                 <a href="javascript:void(0)" data-id="{{$fee['id']}}" class="dropdown-item dropdown-duplicate"><i class="mdi mdi-pencil"></i> {{ _lang('Duplicate') }}</a>
 												<button data-href="#" data-title="{{ _lang('View fee') }}" class="dropdown-item dropdown-view ajax-modal"><i class="mdi mdi-eye"></i> {{ _lang('View') }}</button>
 												<button class="btn-remove dropdown-item" type="submit"><i class="mdi mdi-delete"></i> {{ _lang('Delete') }}</button>

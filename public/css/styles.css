@@ -17705,7 +17705,7 @@ a.compose-mail {
 
 .fee-management-module ul li a {
   color: #fff;
-  padding: 6px 25px;
+  padding: 4px 11px;
   text-decoration: none;
   background: #0061f2;
   display: block;
@@ -17715,7 +17715,7 @@ a.compose-mail {
 .fee-management-module ul li a:hover {
   background: #fff;
   color: #000;
-  padding: 6px 25px;
+  padding: 4px 11px;
   border-radius: 4px;
 }
 
@@ -17746,15 +17746,36 @@ a.compose-mail {
 }
 
 .fee-management-module .tabs-container {
-  flex: 0 0 100px;
+  flex: 0 0 146px;
   border: solid 1px #0061f2;
   /* padding-top: 15px; */
   /* border-radius: 10px; */
 }
 
-.fee-management-module .sharing-level-container {
-  flex: 0 0 calc(100% - 100px);
+.fee-management-module .fees-catalog-container {
+  flex: 0 0 calc(100% - 146px);
   padding-left: 20px;
+}
+
+.custom-select-partner {
+  padding: 2px 8px;
+  height: auto;
+  border: 1px solid #eaeaea;
+}
+
+.btn-loader {
+    display: none;
+    margin-left: 10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 
@@ -17779,5 +17800,22 @@ a.compose-mail {
 
 .invalid-input::placeholder { /* Most modern browsers support this now. */
  color:    red;
+}
+
+.fee-catalog-container .fee-catalog-row {
+  display: flex;
+  gap: 10px;
+}
+
+.fee-catalog-container {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+button.config-btn {
+  background: #0061f2;
+  color: #fff;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
 }
 

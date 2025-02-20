@@ -51,6 +51,7 @@ Route::group(['middleware' => ['install']], function () {
 			Route::resource('users','UserController');
 			Route::post('partners/selected','PartnerController@getPartners');
 			Route::resource('partners','PartnerController');
+			Route::get('merchants/{id}/programs','MerchantController@getProgram')->name("merchants.program");
 			Route::resource('merchants','MerchantController');
 
 
@@ -96,6 +97,7 @@ Route::group(['middleware' => ['install']], function () {
 			Route::post('administration/duplicate', 'FeeController@duplicate')->name('fee.duplicate');
 			//fee Controller
 			Route::resource('fee','FeeController');
+			Route::get('programs/{id}/fee-catalog','ProgramController@getFeeCatalogs');
 			Route::resource('programs','ProgramController');
 
 			//fees catelog

@@ -146,7 +146,7 @@ class PartnerController extends Controller
     public function getPartners(Request $request){
         try {
             $ids = $request->ids;
-            $partners = Partner::whereIn("id", $ids)->get();
+            $partners = Partner::whereIn("id", $ids)->latest()->get();
             return response()->json([
                 "success" => true,
                 "data" => $partners

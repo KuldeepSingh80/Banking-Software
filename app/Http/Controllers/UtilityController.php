@@ -12,6 +12,7 @@ use DB;
 use App\Utilities\PHPMySQLBackup;
 use Validator;
 use App\FeeInfo;
+use App\FeesConfigure;
 use App\Http\Resources\FeesListCollection;
 
 class UtilityController extends Controller
@@ -198,8 +199,9 @@ class UtilityController extends Controller
 	{
 		$title = _lang('Fee Management');
 
-		$data = FeeInfo::orderBy('id', 'DESC')->groupBy("merchant_id")->get();
-		$fees = collect(new FeesListCollection($data));
+		// $data = FeeInfo::orderBy('id', 'DESC')->groupBy("merchant_id")->get();
+		$fees = FeesConfigure::orderBy('id', 'DESC')->with(['merchant', 'program'])->get();
+		// $fees = collect(new FeesListCollection($data));
 		return view('backend.administration.fee_management.listing', compact('title', 'fees'));
 	}
 }

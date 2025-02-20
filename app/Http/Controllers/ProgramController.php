@@ -198,4 +198,21 @@ class ProgramController extends Controller
             return redirect('admin/programs')->withErrors(_lang('Something went wrong!'));
         }
     }
+
+    public function getFeeCatalogs($id)
+    {
+        try {
+            $program = Program::with(['feesCatalogs', 'feesCatalogs.transactionCategory'])->find($id);
+            if(!$program){
+                return response()->json(['success' => false, 'data' => "Program not found"], 200);
+            }
+            if($program->feesCatalogs->isEmpty()){
+                return response()->json(['success' => false, 'data' => "Fee catalogs not found"], 200);
+            }
+            return response()->json(['success' => true, 'data' => $program->feesCatalogs], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'data' => $th->getMessage()], 500);
+        }
+    
+    }
 }
